@@ -21,10 +21,10 @@
   },
   "homepage": "https://github.com/LoveKino/syntaxer#readme",
   "devDependencies": {
-    "cl-jsoneq": "0.0.3",
     "mocha": "^3.1.2"
   },
   "dependencies": {
+    "cl-jsoneq": "0.0.3",
     "basetype": "^0.1.2",
     "bolzano": "0.0.2"
   }
