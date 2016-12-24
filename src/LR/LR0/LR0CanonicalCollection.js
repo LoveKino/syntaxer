@@ -19,8 +19,8 @@ let jsoneq = require('cl-jsoneq');
 module.exports = ({
     startSymbol,
     symbols,
-    expandStartSymbol = 'S`',
-    productions
+    productions,
+    expandStartSymbol = 'S`'
 }) => {
     let C = [
         [ // item set
