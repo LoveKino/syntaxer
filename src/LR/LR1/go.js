@@ -23,7 +23,7 @@ let CLOSURE = require('./closure');
  *
  * @param productions
  */
-module.exports = (I, X, productions) => {
+module.exports = (I, X, T, N, productions) => {
     return CLOSURE(
         reduce(filter(I, (item) => item[1][item[2]] === X), (prev, item) => { // eslint-disable-line
             if (item[1].length && item[2] < item[1].length) {
@@ -34,6 +34,8 @@ module.exports = (I, X, productions) => {
 
             return prev;
         }, []),
+        T,
+        N,
         productions
     );
 };
