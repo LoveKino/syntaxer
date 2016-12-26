@@ -7,6 +7,10 @@ let {
 } = require('bolzano');
 let jsoneq = require('cl-jsoneq');
 
+let {
+    END_SYMBOL, EXPAND_START_SYMBOL
+} = require('../../base/constant');
+
 /**
  * input: grammer G
  *
@@ -19,13 +23,12 @@ let jsoneq = require('cl-jsoneq');
 module.exports = ({
     start,
     T, N,
-    productions,
-    expandStart = 'S`'
+    productions
 }) => {
     let symbols = union(T, N);
     let C = [
         CLOSURE([ // items
-            [expandStart, [start], 0, [null]]
+            [EXPAND_START_SYMBOL, [start], 0, [END_SYMBOL]]
         ], T, N, productions)
     ];
 

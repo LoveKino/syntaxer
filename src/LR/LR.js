@@ -17,6 +17,10 @@
  *    (4) if action[Sm, ai] = error, error
  */
 
+let {
+    END_SYMBOL
+} = require('../base/constant');
+
 /**
  * configuration = [stack, tokens]
  *
@@ -24,59 +28,58 @@
  *
  * @param action function (state, termalSymbol) -> shift | reduce | accept | error
  *      return of action function, is a object: {type, production, errorMsg}
- *      production = {head, body:[]}
+ *      production = [head, body:[]]
  */
-module.exports = (action, goTo) => {
-    let configuration = [
-        [0],
-        []
-    ];
+module.exports = (ACTION, GOTO, {
+    reduceHandler,
+    acceptHandler
+}) => {
+    // initial configuration
+    let configuration = initConfiguration();
 
-    // (S₀X₁S₁..XmSm, aiai₊₁...an$) -> (S₀X₁S₁..XmSm ai S, ai₊₁...an$)
-    // S = GOTO(Sm, ai);
-    let shift = () => {
-        let stack = configuration[0];
-        let tokens = configuration[1];
-        let top = stack[stack.length - 1];
-        let symbol = tokens[0];
-        stack.push(symbol, goTo(top, symbol));
-        tokens.shift();
+    let action = (state, token) => {
+        let act = ACTION[state][token.name];
+        if (!act) {
+            return {
+                type: 'error',
+                errorMsg: `unexpected symbol ${token.name}, token is ${token.text}.`
+            };
+        } else {
+            return act;
+        }
     };
 
-    // (S₀X₁S₁..XmSm, aiai₊₁...an$) -> (S₀X₁S₁...Xm₋rSm₋rAS, aiai₊₁...an$)
-    // A → β, r = |β|
-    // S = GOTO(Sm₋r, A)
-    let reduce = (head, body) => {
-        let stack = configuration[0];
-        for (let i = 0; i < body.length; i++) {
-            stack.pop();
-            stack.pop();
+    let goTo = (state, token) => {
+        let nextState = GOTO[state][token.name];
+        if (nextState === undefined) {
+            throw new Error(`fail to goto state from ${state} and symbol is ${token.name}, token is ${token.text}.`);
         }
-        let top = stack[stack.length - 1];
-        stack.push(head);
-        stack.push(goTo(top, head));
+        return nextState;
     };
 
     let analysis = () => {
-        let topState = configuration[0][configuration[0].length - 1];
-        let symbol = configuration[1][0];
-        let ret = action(topState, symbol);
+        let topState = getTopState(configuration);
+        let token = getNextInputToken(configuration);
+        let ret = action(topState, token);
 
         switch (ret.type) {
             case 'shift':
-                shift();
+                shift(configuration, ret.state);
                 break;
             case 'reduce':
-                reduce();
+                // reduce production
+                reduce(ret.production, configuration, goTo, reduceHandler);
                 break;
             case 'error':
                 // error handle
-                break;
+                throw new Error(ret.errorMsg);
             case 'accept':
-                // accept handle
+                // clear configration
+                configuration[1] = [];
+                acceptHandler && acceptHandler(); // accept handle
                 break;
             default:
-                throw new Error(`unexpected action type ${ret.type}, when try to recoginise from [${topState}, ${symbol}]. The configuration is ${configuration}.`);
+                throw new Error(`unexpected action type ${ret.type}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}`);
         }
     };
 
@@ -93,13 +96,66 @@ module.exports = (action, goTo) => {
     return (token) => {
         if (token === null) {
             // check state of the configuration
-            analysis();
-            return; // TODO finish this analysis
-        }
-        // add token to configuration
-        configuration[1].push(token);
-        while (configuration[1].length) {
-            analysis();
+            configuration[1].push({
+                name: END_SYMBOL
+            });
+            while (configuration[1].length) {
+                analysis();
+            }
+        } else {
+            // add token to configuration
+            configuration[1].push(token);
+            while (configuration[1].length > 1) {
+                analysis();
+            }
         }
     };
+};
+
+let initConfiguration = () => {
+    // initial configuration
+    return [
+        [0], // stack
+        [] // input
+    ];
+};
+
+// (S₀X₁S₁..XmSm, aiai₊₁...an$) -> (S₀X₁S₁..XmSm ai S, ai₊₁...an$)
+// S = GOTO(Sm, ai);
+let shift = (configuration, state) => {
+    let stack = configuration[0];
+    let tokens = configuration[1];
+    let token = getNextInputToken(configuration);
+    stack.push(token, state);
+    tokens.shift();
+};
+
+// (S₀X₁S₁..XmSm, aiai₊₁...an$) -> (S₀X₁S₁...Xm₋rSm₋rAS, aiai₊₁...an$)
+// A → β, r = |β|
+// S = GOTO(Sm₋r, A)
+let reduce = ([head, body], configuration, goTo, reduceHandler) => {
+    let stack = configuration[0];
+    let reducedTokens = [];
+    for (let i = 0; i < body.length; i++) {
+        stack.pop(); // pop state
+        reducedTokens.push(stack.pop()); // pop token
+    }
+    let top = getTopState(configuration);
+    stack.push(head);
+    stack.push(goTo(top, {
+        name: head,
+        text: `[none terminal symbol] ${head}`
+    }));
+
+    reduceHandler && reduceHandler([head, body], reducedTokens);
+};
+
+let getTopState = (configuration) => {
+    let stack = configuration[0];
+    return stack[stack.length - 1];
+};
+
+let getNextInputToken = (configuration) => {
+    let tokens = configuration[1];
+    return tokens[0];
 };

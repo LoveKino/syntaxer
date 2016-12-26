@@ -1,6 +1,7 @@
 'use strict';
 
 let g2 = require('../fixture/grammer2');
+let g3 = require('../fixture/grammer3');
 let assert = require('assert');
 let {
     forEach
@@ -18,5 +19,20 @@ describe('LR1-closure', () => {
                 item[0]
             ], T, N, productions));
         });
+    });
+
+    it('g3:+', () => {
+        let {
+            T, N, productions
+        } = g3.grammer;
+        let ret = closure([
+            ['S`', ['E'], 0, ['$']]
+        ], T, N, productions);
+
+        assert.deepEqual([
+            ['S`', ['E'], 0, ['$']],
+            ['E', ['num'], 0, ['$', '+']],
+            ['E', ['E', '+', 'num'], 0, ['$', '+']]
+        ], ret);
     });
 });

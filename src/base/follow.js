@@ -6,6 +6,10 @@ let {
 
 let first = require('./first');
 
+let {
+    END_SYMBOL
+} = require('../base/constant');
+
 /**
  * FOLLOW(A) = { a | S *⇒ ...Aa..., a ϵ T }
  *
@@ -19,7 +23,7 @@ let first = require('./first');
 module.exports = (startSymbol, T, N, productions) => {
     let map = {};
 
-    map[startSymbol] = [null];
+    map[startSymbol] = [END_SYMBOL];
 
     let oldLen = getNum(map);
 

@@ -21,16 +21,19 @@ let state = (g, X, from, to) => {
 
 describe('LR(1):go', () => {
     it('index', () => {
-        state(g2, 'S', 0, 1);
-        state(g2, 'C', 0, 2);
-        state(g2, 'c', 0, 3);
-        state(g2, 'd', 0, 4);
-        state(g2, 'C', 2, 5);
-        state(g2, 'd', 2, 7);
-        state(g2, 'C', 3, 8);
-        state(g2, 'c', 3, 3);
-        state(g2, 'd', 3, 4);
-        state(g2, 'C', 6, 9);
-        state(g2, 'd', 6, 7);
+        state(g2, 'c', 0, 1);
+        state(g2, 'S', 0, 3);
+        state(g2, 'C', 0, 4);
+        state(g2, 'd', 0, 2);
+
+        state(g2, 'C', 1, 5);
+        state(g2, 'd', 1, 2);
+
+        state(g2, 'C', 4, 8);
+        state(g2, 'c', 4, 6);
+        state(g2, 'd', 4, 7);
+
+        state(g2, 'C', 1, 5);
+        state(g2, 'd', 1, 2);
     });
 });
