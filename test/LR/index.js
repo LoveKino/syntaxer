@@ -118,6 +118,58 @@ describe('LR', () => {
             text: '5'
         });
 
-        parser(null);
+        let ast = parser(null);
+        assert.deepEqual(ast, {
+            'type': 'none-terminal',
+            'symbol': 'S`',
+            'children': [{
+                'type': 'none-terminal',
+                'symbol': 'E',
+                'children': [{
+                    'type': 'none-terminal',
+                    'symbol': 'E',
+                    'children': [{
+                        'type': 'none-terminal',
+                        'symbol': 'E',
+                        'children': [{
+                            'type': 'terminal',
+                            'symbol': 'num',
+                            'token': {
+                                'name': 'num',
+                                'text': '3'
+                            }
+                        }]
+                    }, {
+                        'type': 'terminal',
+                        'symbol': '+',
+                        'token': {
+                            'name': '+',
+                            'text': '+'
+                        }
+                    }, {
+                        'type': 'terminal',
+                        'symbol': 'num',
+                        'token': {
+                            'name': 'num',
+                            'text': '4'
+                        }
+                    }]
+                }, {
+                    'type': 'terminal',
+                    'symbol': '+',
+                    'token': {
+                        'name': '+',
+                        'text': '+'
+                    }
+                }, {
+                    'type': 'terminal',
+                    'symbol': 'num',
+                    'token': {
+                        'name': 'num',
+                        'text': '5'
+                    }
+                }]
+            }]
+        });
     });
 });

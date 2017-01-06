@@ -18,8 +18,14 @@
  */
 
 let {
-    END_SYMBOL
+    END_SYMBOL, EXPAND_START_SYMBOL
 } = require('../base/constant');
+
+let {
+    initAST,
+    reduceAST,
+    appendToken
+} = require('../reduceAst');
 
 /**
  * configuration = [stack, tokens]
@@ -36,6 +42,8 @@ module.exports = (ACTION, GOTO, {
 }) => {
     // initial configuration
     let configuration = initConfiguration();
+
+    let ast = initAST(EXPAND_START_SYMBOL);
 
     let action = (state, token) => {
         let act = ACTION[state][token.name];
@@ -60,15 +68,17 @@ module.exports = (ACTION, GOTO, {
     let analysis = () => {
         let topState = getTopState(configuration);
         let token = getNextInputToken(configuration);
+        // look up action
         let ret = action(topState, token);
 
         switch (ret.type) {
             case 'shift':
-                shift(configuration, ret.state);
+                shift(configuration, ret.state, token);
+                ast = appendToken(ast, token);
                 break;
             case 'reduce':
                 // reduce production
-                reduce(ret.production, configuration, goTo, reduceHandler);
+                ast = reduce(ast, ret.production, configuration, goTo, reduceHandler);
                 break;
             case 'error':
                 // error handle
@@ -76,7 +86,7 @@ module.exports = (ACTION, GOTO, {
             case 'accept':
                 // clear configration
                 configuration[1] = [];
-                acceptHandler && acceptHandler(); // accept handle
+                acceptHandler && acceptHandler(ast); // accept handle
                 break;
             default:
                 throw new Error(`unexpected action type ${ret.type}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}`);
@@ -102,6 +112,8 @@ module.exports = (ACTION, GOTO, {
             while (configuration[1].length) {
                 analysis();
             }
+
+            return ast;
         } else {
             // add token to configuration
             configuration[1].push(token);
@@ -122,10 +134,9 @@ let initConfiguration = () => {
 
 // (S₀X₁S₁..XmSm, aiai₊₁...an$) -> (S₀X₁S₁..XmSm ai S, ai₊₁...an$)
 // S = GOTO(Sm, ai);
-let shift = (configuration, state) => {
+let shift = (configuration, state, token) => {
     let stack = configuration[0];
     let tokens = configuration[1];
-    let token = getNextInputToken(configuration);
     stack.push(token, state);
     tokens.shift();
 };
@@ -133,7 +144,7 @@ let shift = (configuration, state) => {
 // (S₀X₁S₁..XmSm, aiai₊₁...an$) -> (S₀X₁S₁...Xm₋rSm₋rAS, aiai₊₁...an$)
 // A → β, r = |β|
 // S = GOTO(Sm₋r, A)
-let reduce = ([head, body], configuration, goTo, reduceHandler) => {
+let reduce = (ast, [head, body], configuration, goTo, reduceHandler) => {
     let stack = configuration[0];
     let reducedTokens = [];
     for (let i = 0; i < body.length; i++) {
@@ -147,7 +158,13 @@ let reduce = ([head, body], configuration, goTo, reduceHandler) => {
         text: `[none terminal symbol] ${head}`
     }));
 
-    reduceHandler && reduceHandler([head, body], reducedTokens);
+    let newAst = reduceAST(ast,
+        ast.children.length - body.length, // start position
+        ast.children.length - 1, // end position
+        head);
+
+    reduceHandler && reduceHandler([head, body], reducedTokens, ast);
+    return newAst;
 };
 
 let getTopState = (configuration) => {
