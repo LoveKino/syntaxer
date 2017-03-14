@@ -7,7 +7,9 @@
  * output: if ω ϵ L(G), get the bottom-up analysis, otherwise error
  *
  * - init: (S₀, a₁a₂...an$)
+ *
  * - assume current configuration is (S₀X₁S₁...Sm, aiai₊₁...an$)
+ *
  *    (1) if action[Sm, ai] = shift S, S = GOTO[Sm, ai], then we got new configuration:
  *          (S₀X₁S₁..XmSm ai S, ai₊₁...an$)
  *    (2) if action[Sm, ai] = reduce by A → β, |β| = r,then:
@@ -43,6 +45,7 @@ module.exports = (ACTION, GOTO, {
     // initial configuration
     let configuration = initConfiguration();
 
+    // initial ast
     let ast = initAST(EXPAND_START_SYMBOL);
 
     let action = (state, token) => {

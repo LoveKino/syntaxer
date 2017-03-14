@@ -1,15 +1,13 @@
 'use strict';
 
+let LR1Item = require('../../base/LR1Item');
 let GO = require('./go');
-let CLOSURE = require('./closure');
 let {
-    reduce, union, contain
+    buildClosure, sameClosure
+} = require('./closure');
+let {
+    reduce, contain
 } = require('bolzano');
-let jsoneq = require('cl-jsoneq');
-
-let {
-    END_SYMBOL, EXPAND_START_SYMBOL
-} = require('../../base/constant');
 
 /**
  * input: grammer G
@@ -20,16 +18,15 @@ let {
  *
  * item set = [viable prefix, items]
  */
-module.exports = ({
-    start,
-    T, N,
-    productions
-}) => {
-    let symbols = union(T, N);
+module.exports = (grammer) => {
+    let {
+        symbols
+    } = grammer;
+
     let C = [
-        CLOSURE([ // items
-            [EXPAND_START_SYMBOL, [start], 0, [END_SYMBOL]]
-        ], T, N, productions)
+        buildClosure([
+            LR1Item.initItem(grammer)
+        ], grammer)
     ];
 
     while (true) { // eslint-disable-line
@@ -37,11 +34,12 @@ module.exports = ({
         let newC = reduce(C, (prev, I) => {
             // for every symbol
             return reduce(symbols, (pre, X) => {
-                let ret = GO(I, X, T, N, productions);
-                if (ret && ret.length && !contain(C, ret, {
-                    eq: jsoneq
+                let newState = GO(I, X, grammer);
+
+                if (newState && newState.length && !contain(C, newState, {
+                    eq: sameClosure
                 })) {
-                    pre.push(ret);
+                    pre.push(newState);
                 }
                 return pre;
             }, prev);

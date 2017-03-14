@@ -1,15 +1,16 @@
 'use strict';
 
 let LR1Table = require('../../src/LR/LR1/LR1Table');
-let LR = require('../../src/LR/LR');
+let LR = require('../../src/LR');
 let g3 = require('../fixture/grammer3');
 let assert = require('assert');
+let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
 
 describe('LR', () => {
     it('index', (done) => {
         let {
             ACTION, GOTO
-        } = LR1Table(g3.grammer);
+        } = LR1Table(ctxFreeGrammer(g3.grammer));
 
         let reduces = [];
 
@@ -58,7 +59,7 @@ describe('LR', () => {
     it('reduce', (done) => {
         let {
             ACTION, GOTO
-        } = LR1Table(g3.grammer);
+        } = LR1Table(ctxFreeGrammer(g3.grammer));
 
         let reduces = [];
 

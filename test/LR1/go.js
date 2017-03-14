@@ -2,19 +2,24 @@
 
 let GO = require('../../src/LR/LR1/go');
 let g2 = require('../fixture/grammer2');
+let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
+let LR1Item = require('../../src/base/LR1Item');
+
 let assert = require('assert');
 
 let state = (g, X, from, to) => {
-    let {
-        T, N, productions
-    } = g.grammer;
+    let grammer = ctxFreeGrammer(g.grammer);
 
     let {
         LR1C
     } = g;
 
     assert.deepEqual(
-        GO(LR1C[from], X, T, N, productions),
+        GO(
+            LR1C[from].map(list => LR1Item.fromList(list, grammer)),
+            X, grammer
+        ).map(v => v.list()),
+
         LR1C[to]
     );
 };

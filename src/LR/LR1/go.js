@@ -4,7 +4,9 @@ let {
     reduce, filter
 } = require('bolzano');
 
-let CLOSURE = require('./closure');
+let {
+    buildClosure
+} = require('./closure');
 
 /**
  * jump
@@ -23,19 +25,18 @@ let CLOSURE = require('./closure');
  *
  * @param productions
  */
-module.exports = (I, X, T, N, productions) => {
-    return CLOSURE(
-        reduce(filter(I, (item) => item[1][item[2]] === X), (prev, item) => { // eslint-disable-line
-            if (item[1].length && item[2] < item[1].length) {
-                let newItem = item.slice(0);
-                newItem[2] += 1;
-                prev.push(newItem);
+module.exports = (I, X, grammer) => {
+    return buildClosure(
+        reduce(filter(I, (item) => {
+            return item.getNextSymbol() === X;
+        }), (prev, item) => { // eslint-disable-line
+            if (item.restIsNotEmpty()) {
+                prev.push(item.nextPositionItem());
             }
 
             return prev;
         }, []),
-        T,
-        N,
-        productions
+
+        grammer
     );
 };

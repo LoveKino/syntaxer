@@ -4,11 +4,14 @@ let follow = require('../../src/base/follow');
 
 let g1 = require('../fixture/grammer1');
 
+let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
+
 let assert = require('assert');
 
 describe('follow', () => {
     it('index', () => {
-        let map = follow(g1.startSymbol, g1.T, g1.N, g1.productions);
+        let grammer = ctxFreeGrammer(g1);
+        let map = follow(grammer);
 
         assert.deepEqual(map, {
             E: ['$', ')'],

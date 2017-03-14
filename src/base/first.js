@@ -1,7 +1,7 @@
 'use strict';
 
 let {
-    contain, union, reduce, filter, difference, forEach
+    contain, union, reduce, difference, forEach
 } = require('bolzano');
 
 let {
@@ -22,46 +22,64 @@ let {
  * using null stand for ε
  */
 
-let first = (X, T, N, productions) => {
-    if (contain(T, X)) {
+let first = (X, grammer) => {
+    let {
+        isTerminalSymbol,
+        getProductionsOf,
+        isEmptyProduction,
+        getBody,
+        EPSILON
+    } = grammer;
+
+    if (isTerminalSymbol(X)) {
         return [X];
     } else {
-        let ps = filter(productions, ([head]) => head === X);
-        return reduce(ps, (prev, [head, body]) => { // eslint-disable-line
-            if (!body.length) {
-                return union(prev, [null]);
+        // find all productions start with X
+        let ps = getProductionsOf(X);
+
+        return reduce(ps, (prev, production) => {
+            let body = getBody(production);
+            if (isEmptyProduction(production)) {
+                return union(prev, [EPSILON]); // union ε
             } else {
-                if (contain(T, body[0])) {
+                if (isTerminalSymbol(body[0])) {
                     return union(prev, [body[0]]);
                 } else {
-                    return union(prev, firstList(body, T, N, productions));
+                    return union(prev, firstList(body, grammer));
                 }
             }
         }, []);
     }
 };
 
-let firstList = (body, T, N, productions) => {
+/**
+ * [...ab...]
+ */
+let firstList = (body, grammer) => {
+    let {
+        EPSILON
+    } = grammer;
+
     let ret = [];
     forEach(body, (y, index) => {
-        let set = first(y, T, N, productions);
-        ret = union(ret, difference(set, [null]));
-        if (!contain(set, null)) {
+        let set = first(y, grammer);
+        ret = union(ret, difference(set, [EPSILON]));
+        if (!contain(set, EPSILON)) { // stop
             return true;
         }
 
         if (index === body.length - 1) {
-            ret = union(ret, [null]);
+            ret = union(ret, [EPSILON]);
         }
     });
 
     return ret;
 };
 
-module.exports = (alpha, T, N, productions) => {
+module.exports = (alpha, grammer) => {
     if (isArray(alpha)) {
-        return firstList(alpha, T, N, productions);
+        return firstList(alpha, grammer);
     } else {
-        return first(alpha, T, N, productions);
+        return first(alpha, grammer);
     }
 };

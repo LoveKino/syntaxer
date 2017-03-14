@@ -6,10 +6,6 @@ let {
 
 let first = require('./first');
 
-let {
-    END_SYMBOL
-} = require('../base/constant');
-
 /**
  * FOLLOW(A) = { a | S *⇒ ...Aa..., a ϵ T }
  *
@@ -20,7 +16,14 @@ let {
 
 // if A → αBβ, Follow(B) += First(β) - {ε}
 
-module.exports = (startSymbol, T, N, productions) => {
+/**
+ * generate follow map
+ */
+module.exports = (grammer) => {
+    let {
+        startSymbol, isNoneTerminalSymbol, EPSILON, productions, getBody, getHead, END_SYMBOL
+    } = grammer;
+
     let map = {};
 
     map[startSymbol] = [END_SYMBOL];
@@ -28,13 +31,19 @@ module.exports = (startSymbol, T, N, productions) => {
     let oldLen = getNum(map);
 
     while (true) { // eslint-disable-line
-        forEach(productions, ([head, body]) => { // eslint-disable-line
+        forEach(productions, (production) => { // eslint-disable-line
+            let head = getHead(production);
+            let body = getBody(production);
+
             forEach(body, (item, index) => {
-                if (contain(N, item)) {
-                    let firstRest = first(body.slice(index + 1), T, N, productions);
-                    map[item] = union(map[item] || [], difference(firstRest, [null]));
+                if (isNoneTerminalSymbol(item)) {
+                    let firstRest = first(body.slice(index + 1), grammer);
+
+                    map[item] = union(map[item] || [], difference(firstRest, [EPSILON]));
+
                     // β *⇒ ε
-                    if (contain(firstRest, null) || index === body.length - 1) {
+                    if (contain(firstRest, EPSILON) ||
+                        index === body.length - 1) {
                         map[item] = union(map[item], map[head] || []);
                     }
                 }
@@ -42,7 +51,7 @@ module.exports = (startSymbol, T, N, productions) => {
         });
         let newLen = getNum(map);
 
-        if (newLen === oldLen) break;
+        if (newLen === oldLen) break; // no more follow
 
         oldLen = newLen;
     }

@@ -1,18 +1,10 @@
 'use strict';
 
 let {
-    reduce, filter, union, map, findIndex
+    reduce, map, findIndex, flat
 } = require('bolzano');
-let first = require('../../base/first');
 let jsoneq = require('cl-jsoneq');
-
-let {
-    isTerminalSymbol, getProductions, rest, getNextSymbol
-} = require('../../base/util');
-
-let {
-    END_SYMBOL
-} = require('../../base/constant');
+let LR1Item = require('../../base/LR1Item');
 
 /**
  *
@@ -24,69 +16,75 @@ let {
  * LR(1) item: [head, body, dotPosition, [...forward]]
  */
 
-module.exports = (I, T, N, productions) => {
+let buildClosure = (I, grammer) => {
     let closure = I;
 
     while (true) { // eslint-disable-line
-        let newI = reduce(closure, (prev, item) => {
-            let [head, body, dotPosition, a] = item; // eslint-disable-line
-            let next = getNextSymbol(item);
-            if (!next) return prev;
-            let ps = getProductions(next, productions);
-
-            let forwards = reduce(a, (prev, letter) => {
-                return union(prev,
-                    filter(
-                        first(rest(body, dotPosition).concat([letter]), T, N, productions), //
-                        (symbol) => isTerminalSymbol(symbol, T) // terminal
-                    )
-                );
-            }, []);
-
-            let infer = reduce(ps, (pre, [head, body]) => {
-                if (!forwards.length && a.length === 1 && a[0] === END_SYMBOL) { // rest = ε && a = $
-                    return union(pre, [
-                        [head, body, 0, [END_SYMBOL]]
-                    ], {
-                        eq: jsoneq
-                    });
-                }
-
-                return union(pre, map(forwards, (b) => {
-                    return [head, body, 0, [b]];
-                }), {
-                    eq: jsoneq
-                });
-            }, []);
-
-            return union(prev, infer, {
-                eq: jsoneq
-            });
-        }, closure.slice(0));
-
-        // compact
-        newI = reduce(newI, (prev, [head, body, dotPosition, forwards]) => {
-            let itemIndex = findIndex(prev, (v) => {
-                return jsoneq(v.slice(0, -1), [head, body, dotPosition]);
-            });
-            if (itemIndex !== -1) {
-                prev[itemIndex][3] = union(prev[itemIndex][3], forwards);
-            } else {
-                prev.push([head, body, dotPosition, forwards]);
-            }
-
-            return prev;
-        }, []);
+        let newI = compress(
+            expand(closure, grammer)
+        );
 
         if (getSum(newI) === getSum(closure)) break; // no more
+
         closure = newI;
     }
 
     return closure;
 };
 
+let expand = (I, grammer) => {
+    let {
+        END_SYMBOL,
+        isNoneTerminalSymbol,
+        getProductionsOf
+    } = grammer;
+
+    return reduce(I, (prev, {
+        getNextSymbol,
+        getAdjoints,
+        isReducedItem
+    }) => {
+        let next = getNextSymbol();
+
+        if (!next || !isNoneTerminalSymbol(next)) return prev;
+        return LR1Item.union(
+            prev,
+
+            flat(map(getProductionsOf(next), (production) => isReducedItem() ? [
+                LR1Item.supItem(production, END_SYMBOL, grammer)
+            ] : map(getAdjoints(), (b) => LR1Item.supItem(production, b, grammer))))
+        );
+    }, I.slice(0));
+};
+
+let compress = (I) => {
+    return reduce(I, (prev, item) => {
+        let itemIndex = findIndex(prev, (v) => {
+            return jsoneq(v.list().slice(0, -1), item.list().slice(0, -1));
+        });
+
+        if (itemIndex !== -1) {
+            // expand
+            prev[itemIndex].concatForwards(item.getForwards());
+        } else {
+            prev.push(item);
+        }
+
+        return prev;
+    }, []);
+};
+
 let getSum = (I) => {
     return reduce(I, (prev, item) => {
-        return prev + item[3].length;
+        return prev + item.getForwards().length;
     }, 0);
+};
+
+let sameClosure = (closure1, closure2) => {
+    return jsoneq(map(closure1, (v) => v.list()), map(closure2, (v) => v.list()));
+};
+
+module.exports = {
+    buildClosure,
+    sameClosure
 };

@@ -9,7 +9,7 @@ module.exports = {
         ],
         N: ['S', 'C'],
         T: ['c', 'd'],
-        start: 'S'
+        startSymbol: 'S'
     },
 
     LR1C: [

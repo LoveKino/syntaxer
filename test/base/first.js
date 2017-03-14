@@ -6,31 +6,34 @@ let assert = require('assert');
 
 let g1 = require('../fixture/grammer1');
 
+let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
+
 describe('first', () => {
     it('index', () => {
+        let grammer = ctxFreeGrammer(g1);
         assert.deepEqual(
             ['(', 'id'],
-            first('E', g1.T, g1.N, g1.productions)
+            first('E', grammer)
         );
 
         assert.deepEqual(
             ['(', 'id'],
-            first('T', g1.T, g1.N, g1.productions)
+            first('T', grammer)
         );
 
         assert.deepEqual(
             ['(', 'id'],
-            first('F', g1.T, g1.N, g1.productions)
+            first('F', grammer)
         );
 
         assert.deepEqual(
             ['+', null],
-            first('E`', g1.T, g1.N, g1.productions)
+            first('E`', grammer)
         );
 
         assert.deepEqual(
             ['*', null],
-            first('T`', g1.T, g1.N, g1.productions)
+            first('T`', grammer)
         );
     });
 });

@@ -12,17 +12,15 @@ let {
 
 let jsoneq = require('cl-jsoneq');
 
+let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
+
 describe('LR1CanonicalCollection', () => {
     it('index', () => {
-        let {
-            N, T, productions, start
-        } = g2.grammer;
+        let grammer = ctxFreeGrammer(g2.grammer);
 
-        let ret = LR1C({
-            start,
-            T, N,
-            productions
-        });
+        let ret = LR1C(grammer);
+
+        ret = ret.map(list => list.map((v) => v.list()));
 
         assert.deepEqual(ret.length, g2.LR1C.length);
 

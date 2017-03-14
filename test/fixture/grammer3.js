@@ -2,7 +2,7 @@
 
 module.exports = {
     grammer: {
-        start: 'E',
+        startSymbol: 'E',
         T: ['num', '+'],
         N: ['E'],
         productions: [
