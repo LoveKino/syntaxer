@@ -16,25 +16,31 @@
 
 let LR = require('./LR');
 let LR1Table = require('./LR/LR1/LR1Table');
+let ctxFreeGrammer = require('./base/ctxFreeGrammer');
 let {
     forEach
-} = require('bolznao');
+} = require('bolzano');
 
 /**
  * just used for testing
  */
-let parse = (grammer) => {
+let parse = (g, handlers) => {
     let {
         ACTION, GOTO
-    } = LR1Table(grammer);
+    } = LR1Table(ctxFreeGrammer(g));
 
     return (tokens) => {
-        let parser = LR(ACTION, GOTO);
+        let parser = LR(ACTION, GOTO, handlers);
         forEach(tokens, parser);
-        parser(null);
+        return parser(null);
     };
 };
 
+let buildLR1Table = (g) => {
+    let grammer = ctxFreeGrammer(g);
+    return LR1Table(grammer);
+};
+
 module.exports = {
-    LR, LR1Table, parse
+    LR, LR1Table, parse, ctxFreeGrammer, buildLR1Table
 };

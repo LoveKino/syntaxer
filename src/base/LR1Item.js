@@ -13,6 +13,7 @@ let LR1Item = (production, dotPosition, forwards, grammer) => {
         getHead, getBody, isTerminalSymbol, isEndSymbol
     } = grammer;
 
+    // [A → α.Bβ, a]
     let getNextSymbol = () => {
         return getBody(production)[dotPosition];
     };

@@ -36,11 +36,6 @@ module.exports = ({
      */
     let getProductionsOf = (noneTerminal) => filter(productions, ([head]) => head === noneTerminal);
 
-    let getNextSymbol = (item) => {
-        return item[1][item[2]];
-    };
-
-    let rest = (body, dotPosition) => body.slice(dotPosition + 1);
 
     // A -> ε
     let isEmptyProduction = (production) => { // eslint-disable-body
@@ -57,8 +52,6 @@ module.exports = ({
         isTerminalSymbol,
         isNoneTerminalSymbol,
         getProductionsOf,
-        getNextSymbol,
-        rest,
         isEmptyProduction,
         getBody,
         getHead,

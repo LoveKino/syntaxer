@@ -41,7 +41,7 @@ let {
 module.exports = (ACTION, GOTO, {
     reduceHandler,
     acceptHandler
-}) => {
+} = {}) => {
     // initial configuration
     let configuration = initConfiguration();
 
