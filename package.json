@@ -4,7 +4,7 @@
   "description": "syntax analysis",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/**/*.js"
+    "test": "mocha --reporter spec 'test/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -22,11 +22,19 @@
   "homepage": "https://github.com/LoveKino/syntaxer#readme",
   "devDependencies": {
     "coveralls": "^2.11.15",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "readme-builder": "0.0.4"
   },
   "dependencies": {
     "basetype": "^0.1.2",
     "bolzano": "^0.1.1",
     "cl-jsoneq": "0.0.3"
+  },
+  "readmeDocOptions": {
+    "ignores": [
+      "**/*/node_modules/**/*",
+      "node_modules/**/*",
+      "test/**/*"
+    ]
   }
 }
