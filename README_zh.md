@@ -103,15 +103,32 @@ lrParse({ // accept a taken
   text: 'abc'
 });
 let ast = lrParse(null); // null as end symbol
-console.log(ast);
+console.log(JSON.stringify(ast, null, 4));
 ```
 
 <pre>
 输出
 
-    { type: 'none-terminal',
-      symbol: 'S`',
-      children: [ { type: 'none-terminal', symbol: 'S', children: [Object] } ] }
+    {
+        "type": "none-terminal",
+        "symbol": "S`",
+        "children": [
+            {
+                "type": "none-terminal",
+                "symbol": "S",
+                "children": [
+                    {
+                        "type": "terminal",
+                        "symbol": "a",
+                        "token": {
+                            "name": "a",
+                            "text": "abc"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
 
 </pre>
 

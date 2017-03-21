@@ -41,6 +41,6 @@
  *   text: 'abc'
  * });
  * let ast = lrParse(null); // null as end symbol
- * console.log(ast);
+ * console.log(JSON.stringify(ast, null, 4));
  */
 module.exports = require('./src');
