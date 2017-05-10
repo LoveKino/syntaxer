@@ -1,6 +1,6 @@
 {
   "name": "syntaxer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "syntax analysis",
   "main": "index.js",
   "scripts": {
