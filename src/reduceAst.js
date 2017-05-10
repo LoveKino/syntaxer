@@ -90,10 +90,11 @@ let tokenToLeaf = (token) => {
  *
  * β = ast.children[start] ~ ast.children[end]
  *
- * 1. remove β from ast, replac with A
+ * 1. remove β from ast, replace with A
  * 2. make every elements of β as A's child
  */
 let reduceAST = (ast, start = 0, end = 0, leftSymbol) => {
+    // generate a new middle node, which will hang beta nodes
     let midNode = {
         type: NONE_TERMINAL_TYPE,
         symbol: leftSymbol
@@ -101,7 +102,8 @@ let reduceAST = (ast, start = 0, end = 0, leftSymbol) => {
 
     let beta = ast.children.splice(start, end - start + 1, midNode);
     midNode.children = beta;
-    return ast;
+
+    return {newAst: ast, midNode};
 };
 
 /**

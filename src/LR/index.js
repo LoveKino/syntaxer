@@ -161,12 +161,12 @@ let reduce = (ast, [head, body], configuration, goTo, reduceHandler) => {
         text: `[none terminal symbol] ${head}`
     }));
 
-    let newAst = reduceAST(ast,
+    let {newAst, midNode} = reduceAST(ast,
         ast.children.length - body.length, // start position
         ast.children.length - 1, // end position
         head);
 
-    reduceHandler && reduceHandler([head, body], reducedTokens, ast);
+    reduceHandler && reduceHandler([head, body], midNode, reducedTokens, ast);
     return newAst;
 };
 

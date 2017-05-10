@@ -98,7 +98,7 @@ let {ACTION, GOTO} = buildLR1Table({
     ]
 });
 let lrParse = LR(ACTION, GOTO);
-lrParse({ // accept a taken
+lrParse({ // accept a token
   name: 'a',
   text: 'abc'
 });

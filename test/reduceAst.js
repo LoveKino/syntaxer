@@ -83,7 +83,7 @@ describe('reduce', () => {
         };
 
         // number + int => int + int (number -> int)
-        let ast2 = reduceAST(ast, 0, 0, 'number');
+        let ast2 = reduceAST(ast, 0, 0, 'number').newAst;
         assert.deepEqual(ast2, {
             type: 'none-terminal',
             symbol: 'S',
@@ -95,8 +95,7 @@ describe('reduce', () => {
         });
 
         // number + number => number + int (number -> int)
-        let ast3 = reduceAST(ast2, 2, 2, 'number');
-        assert.deepEqual(ast3, {
+        assert.deepEqual(reduceAST(ast2, 2, 2, 'number').newAst, {
             type: 'none-terminal',
             symbol: 'S',
             children: [{

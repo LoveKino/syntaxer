@@ -15,7 +15,7 @@ describe('LR', () => {
         let reduces = [];
 
         let parser = LR(ACTION, GOTO, {
-            reduceHandler: (production, reducedTokens) => {
+            reduceHandler: (production, midNode, reducedTokens) => {
                 reduces.push(production, reducedTokens);
             },
             acceptHandler: () => {
@@ -64,7 +64,7 @@ describe('LR', () => {
         let reduces = [];
 
         let parser = LR(ACTION, GOTO, {
-            reduceHandler: (production, reducedTokens) => {
+            reduceHandler: (production, midNode, reducedTokens) => {
                 reduces.push(production, reducedTokens);
             },
             acceptHandler: () => {
