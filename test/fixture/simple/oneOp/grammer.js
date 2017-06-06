@@ -1,14 +1,11 @@
 'use strict';
 
+let {
+    parse
+} = require('bnfer');
+
 module.exports = {
-    grammer: {
-        startSymbol: 'S',
-        N: ['S'],
-        T: ['num', '+'],
-        productions: [
-            ['S', ['num', '+', 'num']] // S -> num + num
-        ]
-    },
+    grammer: parse('S := num + num'),
 
     LR1C: [
         [

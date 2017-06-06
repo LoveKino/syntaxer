@@ -1,6 +1,6 @@
 {
   "name": "syntaxer",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "syntax analysis",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/LoveKino/syntaxer#readme",
   "devDependencies": {
+    "bnfer": "0.0.2",
     "coveralls": "^2.11.15",
     "mocha": "^3.2.0",
     "readme-builder": "0.0.4"
