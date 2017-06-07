@@ -20,16 +20,14 @@ let buildClosure = (I, grammer) => {
     let closure = I;
 
     while (true) { // eslint-disable-line
-        let newI = compress(
-            expand(closure, grammer)
-        );
+        let newI = expand(closure, grammer);
 
         if (getSum(newI) === getSum(closure)) break; // no more
 
         closure = newI;
     }
 
-    return closure;
+    return compress(closure);
 };
 
 let expand = (I, grammer) => {
@@ -47,6 +45,7 @@ let expand = (I, grammer) => {
         let next = getNextSymbol();
 
         if (!next || !isNoneTerminalSymbol(next)) return prev;
+
         return LR1Item.union(
             prev,
 

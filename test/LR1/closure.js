@@ -2,6 +2,7 @@
 
 let g2 = require('../fixture/grammer2');
 let g3 = require('../fixture/grammer3');
+let leftRecursion2 = require('../fixture/leftRecursion2');
 let assert = require('assert');
 let {
     forEach
@@ -41,5 +42,23 @@ describe('LR1-closure', () => {
             ['E', ['num'], 0, ['$', '+']],
             ['E', ['E', '+', 'num'], 0, ['$', '+']]
         ], ret.map(v => v.list()));
+    });
+
+    it('deep', () => {
+        let grammer = ctxFreeGrammer(leftRecursion2.grammer);
+
+        let ret = buildClosure([
+            LR1Item.fromList(['S`', ['S'], 0, ['$']], grammer)
+        ], grammer);
+
+        assert.deepEqual(ret.map((v) => v.list()), [
+            ['S`', ['S'], 0, ['$']],
+            ['S', ['STATEMENTS'], 0, ['$']],
+            ['STATEMENTS', ['STATEMENT'], 0, ['$']],
+            ['STATEMENTS', ['STATEMENT', ';', 'STATEMENT'], 0, ['$']],
+            ['STATEMENT', ['LETTER'], 0, ['$', ';']],
+            ['STATEMENT', [], 0, ['$', ';']],
+            ['LETTER', ['a'], 0, ['$', ';']]
+        ]);
     });
 });
