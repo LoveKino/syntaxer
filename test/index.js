@@ -15,6 +15,7 @@ let simple_one_op_ast = require('./fixture/simple/oneOp/ast');
 
 let leftRecursion = require('./fixture/leftRecursion');
 let leftRecursion2 = require('./fixture/leftRecursion2');
+let leftRecursion3 = require('./fixture/leftRecursion3');
 
 let assert = require('assert');
 let {
@@ -112,5 +113,18 @@ describe('index', () => {
             name: 'a',
             text: 'a'
         }]);
+    });
+
+    it('left recursion 3', () => {
+        parse(leftRecursion3.grammer)([
+
+            {
+                name: '*',
+                text: '*'
+            }, {
+                name: 'a',
+                text: 'a'
+            }
+        ]);
     });
 });

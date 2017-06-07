@@ -30,14 +30,13 @@ let LR1Item = (production, dotPosition, forwards, grammer) => {
 
     // [A → α.Bβ, a], FIRST(βa)
     let getAdjoints = () => {
-        return reduce(getForwards(), (prev, letter) => {
-            return union(prev,
-                filter(
-                    first(afterNextRest().concat([letter]), grammer),
-                    isTerminalSymbol // terminal
-                )
-            );
+        let ret = reduce(getForwards(), (prev, letter) => {
+            let beta = afterNextRest();
+            let firstSet = beta.length ? first(beta.concat([letter]), grammer) : [letter];
+            return union(prev, filter(firstSet, (item) => isTerminalSymbol(item) || isEndSymbol(item)));
         }, []);
+
+        return ret;
     };
 
     let isReducedItem = () => { // rest = ε && a = $
