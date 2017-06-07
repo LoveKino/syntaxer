@@ -13,6 +13,8 @@ let simple_one_ast = require('./fixture/simple/one/ast');
 let simple_one_op_g = require('./fixture/simple/oneOp/grammer');
 let simple_one_op_ast = require('./fixture/simple/oneOp/ast');
 
+let leftRecursion = require('./fixture/leftRecursion');
+
 let assert = require('assert');
 let {
     forEach, contain
@@ -57,5 +59,31 @@ describe('index', () => {
 
     it('LR1 table', () => {
         testGrammer(g2);
+    });
+
+    it('left recursion', () => {
+        parse(leftRecursion.grammer)([{
+            name: 'a',
+            text: 'a'
+        }]);
+
+        parse(leftRecursion.grammer)([{
+            name: 'a',
+            text: 'a'
+        }, {
+            name: ';',
+            text: ';'
+        }]);
+
+        parse(leftRecursion.grammer)([{
+            name: 'a',
+            text: 'a'
+        }, {
+            name: ';',
+            text: ';'
+        }, {
+            name: 'a',
+            text: 'a'
+        }]);
     });
 });
