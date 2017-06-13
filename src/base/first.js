@@ -39,6 +39,7 @@ let first = (X, grammer) => {
 
         return reduce(ps, (prev, production) => {
             let body = getBody(production);
+
             if (isEmptyProduction(production)) {
                 return union(prev, [EPSILON]); // union ε
             } else {

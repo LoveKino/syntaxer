@@ -1,9 +1,5 @@
 'use strict';
 
-let {
-    contain, filter
-} = require('bolzano');
-
 /**
  * context free grammer
  *    terminal symbol
@@ -19,6 +15,11 @@ const {
     END_SYMBOL, EXPAND_START_SYMBOL, EPSILON
 } = require('./constant');
 
+
+/**
+ * context free grammer is read-only
+ */
+
 // TODO validate
 module.exports = ({
     startSymbol,
@@ -27,15 +28,18 @@ module.exports = ({
 }) => {
     let symbols = T.concat(N);
 
-    let isTerminalSymbol = (symbol) => contain(T, symbol);
+    // cache
+    let noneTerminalProductionMap = getNoneTerminalProductionMap(productions);
+    let terminalMap = listToExistMap(T);
+    let noneTerminalMap = listToExistMap(N);
 
-    let isNoneTerminalSymbol = (symbol) => contain(N, symbol);
+    let isTerminalSymbol = (symbol) => !!terminalMap[symbol];
+    let isNoneTerminalSymbol = (symbol) => !!noneTerminalMap[symbol];
 
     /**
      * get all the productions startSymbol with none terminal symbol
      */
-    let getProductionsOf = (noneTerminal) => filter(productions, ([head]) => head === noneTerminal);
-
+    let getProductionsOf = (noneTerminal) => noneTerminalProductionMap[noneTerminal];
 
     // A -> ε
     let isEmptyProduction = (production) => { // eslint-disable-body
@@ -64,4 +68,30 @@ module.exports = ({
         symbols,
         N
     };
+};
+
+let listToExistMap = (arr) => {
+    let map = {};
+    let tLen = arr.length;
+    for (let i = 0; i < tLen; i++) {
+        map[arr[i]] = true;
+    }
+    return map;
+};
+
+/**
+ * get the production map, key is none terminal symbol, keys is the set of producitons
+ */
+let getNoneTerminalProductionMap = (producitons) => {
+    let productionMap = {};
+
+    let productionLen = producitons.length;
+    for (let i = 0; i < productionLen; i++) {
+        let production = producitons[i];
+        let head = production[0];
+        productionMap[head] = productionMap[head] || [];
+        productionMap[head].push(production);
+    }
+
+    return productionMap;
 };
