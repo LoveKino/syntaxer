@@ -1,12 +1,14 @@
 'use strict';
 
-let jsoneq = require('cl-jsoneq');
-
 let first = require('./first');
 
 let {
     union, reduce, filter
 } = require('bolzano');
+
+let {
+    eqList
+} = require('../util');
 
 let LR1Item = (production, dotPosition, forwards, grammer) => {
     let {
@@ -33,6 +35,7 @@ let LR1Item = (production, dotPosition, forwards, grammer) => {
         let ret = reduce(getForwards(), (prev, letter) => {
             let beta = afterNextRest();
             let firstSet = beta.length ? first(beta.concat([letter]), grammer) : [letter];
+
             return union(prev, filter(firstSet, (item) => isTerminalSymbol(item) || isEndSymbol(item)));
         }, []);
 
@@ -76,7 +79,10 @@ let LR1Item = (production, dotPosition, forwards, grammer) => {
 
 // TODO
 LR1Item.sameItem = (item1, item2) => {
-    return jsoneq(item1.list(), item2.list());
+    let [head1, body1, dotPosition1, forwards1] = item1.list();
+    let [head2, body2, dotPosition2, forwards2] = item2.list();
+
+    return head1 === head2 && eqList(body1, body2) && dotPosition1 === dotPosition2 && eqList(forwards1, forwards2);
 };
 
 LR1Item.fromList = ([head, body, dotPosition, forwards], grammer) => {
