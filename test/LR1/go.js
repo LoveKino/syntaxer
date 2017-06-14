@@ -1,10 +1,12 @@
 'use strict';
 
+let {
+    LR1Itemer
+} = require('../../src/base/LR1Item');
 let GO = require('../../src/LR/LR1/go');
 let g2 = require('../fixture/grammer2');
 let leftRecursion3 = require('../fixture/leftRecursion3');
 let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
-let LR1Item = require('../../src/base/LR1Item');
 let {
     buildClosure
 } = require('../../src/LR/LR1/closure');
@@ -18,10 +20,12 @@ let state = (g, X, from, to) => {
         LR1C
     } = g;
 
+    let LR1Grammer = LR1Itemer(grammer);
+
     assert.deepEqual(
         GO(
-            LR1C[from].map(list => LR1Item.fromList(list, grammer)),
-            X, grammer
+            LR1C[from].map(list => LR1Grammer.fromList(list, grammer)),
+            X, grammer, LR1Grammer
         ).map(v => v.list()),
 
         LR1C[to]
@@ -49,11 +53,13 @@ describe('LR(1):go', () => {
     it('deep', () => {
         let grammer = ctxFreeGrammer(leftRecursion3.grammer);
 
-        let ret = buildClosure([
-            LR1Item.fromList(['S`', ['S'], 0, ['$']], grammer)
-        ], grammer);
+        let LR1Grammer = LR1Itemer(grammer);
 
-        let newState = GO(ret, '*', grammer);
+        let ret = buildClosure([
+            LR1Grammer.fromList(['S`', ['S'], 0, ['$']], grammer)
+        ], grammer, LR1Grammer);
+
+        let newState = GO(ret, '*', grammer, LR1Grammer);
         assert.deepEqual(newState.map(item => item.list()), [
             ['STATEMENT', ['*', 'LETTER'], 1, ['$', ';']],
             ['LETTER', ['a'], 0, ['$', ';']]

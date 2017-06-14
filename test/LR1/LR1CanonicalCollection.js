@@ -1,6 +1,9 @@
 'use strict';
 
 let LR1C = require('../../src/LR/LR1/LR1CanonicalCollection');
+let {
+    LR1Itemer
+} = require('../../src/base/LR1Item');
 
 let g2 = require('../fixture/grammer2');
 
@@ -18,7 +21,7 @@ describe('LR1CanonicalCollection', () => {
     it('index', () => {
         let grammer = ctxFreeGrammer(g2.grammer);
 
-        let ret = LR1C(grammer);
+        let ret = LR1C(grammer, LR1Itemer(grammer));
 
         ret = ret.map(list => list.map((v) => v.list()));
 

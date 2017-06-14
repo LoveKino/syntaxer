@@ -1,6 +1,5 @@
 'use strict';
 
-let LR1Item = require('../../base/LR1Item');
 let GO = require('./go');
 let {
     buildClosure, sameClosure
@@ -18,15 +17,15 @@ let {
  *
  * item set = [viable prefix, items]
  */
-module.exports = (grammer) => {
+module.exports = (grammer, LR1Grammer) => {
     let {
         symbols
     } = grammer;
 
     let C = [
         buildClosure([
-            LR1Item.initItem(grammer)
-        ], grammer)
+            LR1Grammer.initItem(grammer)
+        ], grammer, LR1Grammer)
     ];
 
     while (true) { // eslint-disable-line
@@ -34,7 +33,7 @@ module.exports = (grammer) => {
         let newC = reduce(C, (prev, I) => {
             // for every symbol
             return reduce(symbols, (pre, X) => {
-                let newState = GO(I, X, grammer);
+                let newState = GO(I, X, grammer, LR1Grammer);
 
                 if (newState && newState.length && !contain(C, newState, {
                     eq: sameClosure

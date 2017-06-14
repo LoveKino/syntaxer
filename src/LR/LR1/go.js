@@ -25,7 +25,7 @@ let {
  *
  * @param productions
  */
-module.exports = (I, X, grammer) => {
+module.exports = (I, X, grammer, LR1Grammer) => {
     return buildClosure(
         reduce(filter(I, (item) => {
             return item.getNextSymbol() === X;
@@ -37,6 +37,8 @@ module.exports = (I, X, grammer) => {
             return prev;
         }, []),
 
-        grammer
+        grammer,
+
+        LR1Grammer
     );
 };

@@ -4,11 +4,10 @@ let {
     reduce, map, findIndex, flat
 } = require('bolzano');
 let jsoneq = require('cl-jsoneq');
-let LR1Item = require('../../base/LR1Item');
 
 /**
  *
- *  valide LR(1) item: LR(1) item [A→α.β, a] is valide for prefix ρ=δα, if exists:
+ * valide LR(1) item: LR(1) item [A→α.β, a] is valide for prefix ρ=δα, if exists:
  *      S *⇒ δAω ⇒ δαβω
  *
  * inference: if [A→α.Bβ,a] is valide for ρ=δα, and B→θ is a production, then for any b ϵ FIRST(βa), [B→.θ,b] is valide for predix ρ=δα
@@ -16,11 +15,11 @@ let LR1Item = require('../../base/LR1Item');
  * LR(1) item: [head, body, dotPosition, [...forward]]
  */
 
-let buildClosure = (I, grammer) => {
+let buildClosure = (I, grammer, LR1Grammer) => {
     let closure = I;
 
     while (true) { // eslint-disable-line
-        let newI = expand(closure, grammer);
+        let newI = expand(closure, grammer, LR1Grammer);
 
         if (getSum(newI) === getSum(closure)) break; // no more
 
@@ -30,7 +29,7 @@ let buildClosure = (I, grammer) => {
     return compress(closure);
 };
 
-let expand = (I, grammer) => {
+let expand = (I, grammer, LR1Grammer) => {
     let {
         END_SYMBOL,
         isNoneTerminalSymbol,
@@ -46,12 +45,12 @@ let expand = (I, grammer) => {
 
         if (!next || !isNoneTerminalSymbol(next)) return prev;
 
-        return LR1Item.union(
+        return LR1Grammer.unionLR1Items(
             prev,
 
             flat(map(getProductionsOf(next), (production) => isReducedItem() ? [
-                LR1Item.supItem(production, END_SYMBOL, grammer)
-            ] : map(getAdjoints(), (b) => LR1Item.supItem(production, b, grammer))))
+                LR1Grammer.supItem(production, END_SYMBOL, grammer)
+            ] : map(getAdjoints(), (b) => LR1Grammer.supItem(production, b, grammer))))
         );
     }, I.slice(0));
 };

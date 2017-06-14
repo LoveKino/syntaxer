@@ -4,6 +4,7 @@ let {
     LR1Table, parse
 } = require('../src');
 
+let {LR1Itemer} = require('../src/base/LR1Item');
 let LR1C = require('../src/LR/LR1/LR1CanonicalCollection');
 let ctxFreeGrammer = require('../src/base/ctxFreeGrammer');
 
@@ -27,7 +28,7 @@ let testGrammer = (g) => {
     let grammer = ctxFreeGrammer(g.grammer);
     let lr1table = LR1Table(grammer);
 
-    let ret = LR1C(grammer);
+    let ret = LR1C(grammer, LR1Itemer(grammer));
     ret = ret.map(list => list.map((v) => v.list()));
 
     forEach(ret, (item) => {

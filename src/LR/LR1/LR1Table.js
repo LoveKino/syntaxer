@@ -5,7 +5,9 @@ let {
     forEach, findIndex
 } = require('bolzano');
 let GO = require('./go');
-let LR1Item = require('../../base/LR1Item');
+let {
+    LR1Itemer
+} = require('../../base/LR1Item');
 let {
     sameClosure
 } = require('./closure');
@@ -15,10 +17,12 @@ module.exports = (grammer) => {
         END_SYMBOL, isTerminalSymbol, N
     } = grammer;
 
-    let ACTION = [],
-        GOTO = [];
+    let ACTION = [], // action table
+        GOTO = []; // goto table
 
-    let C = LR1CanonicalCollection(grammer);
+    let LR1Grammer = LR1Itemer(grammer);
+
+    let C = LR1CanonicalCollection(grammer, LR1Grammer);
 
     forEach(C, (I, index) => {
         ACTION[index] = ACTION[index] || {};
@@ -27,7 +31,7 @@ module.exports = (grammer) => {
 
         forEach(I, (item) => {
             // [S`→ S., $] ϵ Ii
-            if (LR1Item.isAcceptItem(item)) {
+            if (LR1Grammer.isAcceptItem(item)) {
                 //
                 ACTION[index][END_SYMBOL] = {
                     type: 'accept'
@@ -40,7 +44,7 @@ module.exports = (grammer) => {
                     };
                 });
             } else if (isTerminalSymbol(item.getNextSymbol())) {
-                let Ij = GO(I, item.getNextSymbol(), grammer);
+                let Ij = GO(I, item.getNextSymbol(), grammer, LR1Grammer);
 
                 if (Ij && Ij.length) {
                     ACTION[index][item.getNextSymbol()] = {
@@ -55,7 +59,7 @@ module.exports = (grammer) => {
     forEach(C, (I, index) => {
         GOTO[index] = GOTO[index] || {};
         forEach(N, (A) => {
-            let Ij = GO(I, A, grammer);
+            let Ij = GO(I, A, grammer, LR1Grammer);
             if (Ij && Ij.length) {
                 GOTO[index][A] = getStateIndex(C, Ij);
             }

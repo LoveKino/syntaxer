@@ -11,15 +11,18 @@ let {
     buildClosure
 } = require('../../src/LR/LR1/closure');
 let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
-let LR1Item = require('../../src/base/LR1Item');
+let {
+    LR1Itemer
+} = require('../../src/base/LR1Item');
 
 let testClosure = (g) => {
     let grammer = ctxFreeGrammer(g.grammer);
+    let LR1Grammer = LR1Itemer(grammer);
 
     forEach(g.LR1C, (item) => {
         assert.deepEqual(item, buildClosure([
-            LR1Item.fromList(item[0], grammer)
-        ], grammer).map(v => {
+            LR1Grammer.fromList(item[0], grammer)
+        ], grammer, LR1Grammer).map(v => {
             return v.list();
         }));
     });
@@ -33,9 +36,10 @@ describe('LR1-closure', () => {
     it('g3:+', () => {
         let grammer = ctxFreeGrammer(g3.grammer);
 
+        let LR1Grammer = LR1Itemer(grammer);
         let ret = buildClosure([
-            LR1Item.fromList(['S`', ['E'], 0, ['$']], grammer)
-        ], grammer);
+            LR1Grammer.fromList(['S`', ['E'], 0, ['$']], grammer)
+        ], grammer, LR1Grammer);
 
         assert.deepEqual([
             ['S`', ['E'], 0, ['$']],
@@ -47,9 +51,11 @@ describe('LR1-closure', () => {
     it('deep', () => {
         let grammer = ctxFreeGrammer(leftRecursion2.grammer);
 
+        let LR1Grammer = LR1Itemer(grammer);
+
         let ret = buildClosure([
-            LR1Item.fromList(['S`', ['S'], 0, ['$']], grammer)
-        ], grammer);
+            LR1Grammer.fromList(['S`', ['S'], 0, ['$']], grammer)
+        ], grammer, LR1Grammer);
 
         assert.deepEqual(ret.map((v) => v.list()), [
             ['S`', ['S'], 0, ['$']],
