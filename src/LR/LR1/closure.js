@@ -1,7 +1,7 @@
 'use strict';
 
 let {
-    reduce, map, flat
+    reduce, map, contain
 } = require('bolzano');
 
 let jsoneq = require('cl-jsoneq');
@@ -19,49 +19,35 @@ let jsoneq = require('cl-jsoneq');
  */
 
 let buildClosure = (items, grammer, LR1Grammer) => {
+    let appendedItems = items;
+
     while (true) { // eslint-disable-line
-        let newI = expand(items, grammer, LR1Grammer);
+        let newAppendedItems = reduce(appendedItems, (prev, item) => {
+            let newItems = LR1Grammer.expandItem(item);
+            return prev.concat(newItems);
+        }, []);
 
-        if (getSum(newI) === getSum(items)) break; // no more
+        let noRepeatedNewItems = [];
 
-        items = newI;
+        for (let i = 0; i < newAppendedItems.length; i++) {
+            let item = newAppendedItems[i];
+
+            if (!contain(items, item, {
+                eq: LR1Grammer.sameItem
+            })) {
+                noRepeatedNewItems.push(item);
+            }
+        }
+
+        if (!noRepeatedNewItems.length) break;
+
+        items = items.concat(noRepeatedNewItems);
+        appendedItems = noRepeatedNewItems;
     }
 
     return {
         items: LR1Grammer.compressItemSet(items)
     };
-};
-
-let expand = (I, grammer, LR1Grammer) => {
-    let {
-        END_SYMBOL,
-        isNoneTerminalSymbol,
-        getProductionsOf
-    } = grammer;
-
-    return reduce(I, (prev, {
-        getNextSymbol,
-        getAdjoints,
-        isReducedItem
-    }) => {
-        let next = getNextSymbol();
-
-        if (!next || !isNoneTerminalSymbol(next)) return prev;
-
-        return LR1Grammer.unionLR1Items(
-            prev,
-
-            flat(map(getProductionsOf(next), (production) => isReducedItem() ? [
-                LR1Grammer.supItem(production, END_SYMBOL, grammer)
-            ] : map(getAdjoints(), (b) => LR1Grammer.supItem(production, b, grammer))))
-        );
-    }, I.slice(0));
-};
-
-let getSum = (I) => {
-    return reduce(I, (prev, item) => {
-        return prev + item.getForwards().length;
-    }, 0);
 };
 
 let sameClosure = (closure1, closure2) => {

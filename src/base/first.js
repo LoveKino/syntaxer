@@ -64,13 +64,19 @@ module.exports = (grammer) => {
         }
     };
 
+    let firstListMap = {};
     /**
      * [...ab...]
      */
     let firstList = (body) => {
         let {
-            EPSILON
+            EPSILON, getBodyId
         } = grammer;
+
+        let bodyId = getBodyId(body);
+        if (firstListMap[bodyId]) {
+            return firstListMap[bodyId];
+        }
 
         let ret = [];
         forEach(body, (y, index) => {
@@ -86,6 +92,7 @@ module.exports = (grammer) => {
             }
         });
 
+        firstListMap[bodyId] = ret;
         return ret;
     };
 

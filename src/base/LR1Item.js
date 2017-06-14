@@ -3,7 +3,7 @@
 let First = require('./first');
 
 let {
-    union, reduce, filter, findIndex
+    union, reduce, filter, findIndex, flat, map
 } = require('bolzano');
 
 let {
@@ -11,6 +11,12 @@ let {
 } = require('../util');
 
 let LR1Itemer = (grammer) => {
+    let {
+        END_SYMBOL,
+        isNoneTerminalSymbol,
+        getProductionsOf
+    } = grammer;
+
     let first = First(grammer);
 
     let buildLR1Item = (production, dotPosition, forwards) => {
@@ -35,8 +41,10 @@ let LR1Itemer = (grammer) => {
 
         // [A → α.Bβ, a], FIRST(βa)
         let getAdjoints = () => {
-            let ret = reduce(getForwards(), (prev, letter) => {
-                let beta = afterNextRest();
+            let beta = afterNextRest();
+            let forwards = getForwards();
+
+            let ret = reduce(forwards, (prev, letter) => {
                 let firstSet = beta.length ? first(beta.concat([letter])) : [letter];
 
                 return union(prev, filter(firstSet, (item) => isTerminalSymbol(item) || isEndSymbol(item)));
@@ -146,7 +154,28 @@ let LR1Itemer = (grammer) => {
         return buildLR1Item(production, 0, [symbol]);
     };
 
+    // TODO cache
+    let expandItem = (item) => {
+        let {
+            getNextSymbol,
+            getAdjoints,
+            isReducedItem
+        } = item;
+        let next = getNextSymbol();
+
+        if (!next || !isNoneTerminalSymbol(next)) return [];
+
+        let nextProductions = getProductionsOf(next);
+
+        let newItems = flat(map(nextProductions, (production) => isReducedItem() ? [
+            supItem(production, END_SYMBOL)
+        ] : map(getAdjoints(), (b) => supItem(production, b))));
+
+        return newItems;
+    };
+
     return {
+        expandItem,
         buildLR1Item,
         isAcceptItem,
         sameItem,
