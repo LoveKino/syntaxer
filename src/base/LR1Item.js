@@ -35,6 +35,7 @@ let LR1Itemer = (grammer) => {
 
         let list = () => [getHead(production), getBody(production), dotPosition, forwards];
 
+        // change the forwards
         let concatForwards = (newForwards) => {
             forwards = union(forwards, newForwards);
         };
