@@ -43,23 +43,26 @@ module.exports = (grammer, LR1Grammer) => {
     };
 
     return (I, X) => {
-        let startItems = null;
+        let targetClosure = null;
 
-        I.cache_startItems = I.cache_startItems || {};
+        I.cache_GOTO = I.cache_GOTO || {};
 
-        if (I.cache_startItems[X]) {
-            startItems = I.cache_startItems[X];
+        if (I.cache_GOTO[X]) {
+            targetClosure = I.cache_GOTO[X];
         } else {
-            startItems = getStartItems(I, X);
-            I.cache_startItems[X] = startItems;
+            let startItems = getStartItems(I, X);
+
+            targetClosure = buildClosure(
+                startItems,
+
+                grammer,
+
+                LR1Grammer
+            );
+
+            I.cache_GOTO[X] = targetClosure;
         }
 
-        return buildClosure(
-            startItems,
-
-            grammer,
-
-            LR1Grammer
-        );
+        return targetClosure;
     };
 };

@@ -13,6 +13,8 @@ let jsoneq = require('cl-jsoneq');
  * inference: if [A→α.Bβ,a] is valide for ρ=δα, and B→θ is a production, then for any b ϵ FIRST(βa), [B→.θ,b] is valide for predix ρ=δα
  *
  * LR(1) item: [head, body, dotPosition, [...forward]]
+ *
+ * important: when closure is builded, it's immutable
  */
 
 let buildClosure = (items, grammer, LR1Grammer) => {
