@@ -1,6 +1,5 @@
 'use strict';
 
-let GO = require('./go');
 let {
     buildClosure, sameClosure
 } = require('./closure');
@@ -17,7 +16,7 @@ let {
  *
  * item set = [viable prefix, items]
  */
-module.exports = (grammer, LR1Grammer) => {
+module.exports = (grammer, LR1Grammer, go) => {
     let {
         symbols
     } = grammer;
@@ -33,7 +32,7 @@ module.exports = (grammer, LR1Grammer) => {
         let newC = reduce(C, (prev, I) => {
             // for every symbol
             return reduce(symbols, (pre, X) => {
-                let newState = GO(I, X, grammer, LR1Grammer);
+                let newState = go(I, X);
 
                 if (newState && newState.items.length && !contain(C, newState, {
                     eq: sameClosure

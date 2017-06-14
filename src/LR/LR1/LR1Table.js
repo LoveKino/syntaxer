@@ -21,8 +21,9 @@ module.exports = (grammer) => {
         GOTO = []; // goto table
 
     let LR1Grammer = LR1Itemer(grammer);
+    let go = GO(grammer, LR1Grammer);
 
-    let C = LR1CanonicalCollection(grammer, LR1Grammer);
+    let C = LR1CanonicalCollection(grammer, LR1Grammer, go);
 
     forEach(C, (I, index) => {
         ACTION[index] = ACTION[index] || {};
@@ -44,7 +45,7 @@ module.exports = (grammer) => {
                     };
                 });
             } else if (isTerminalSymbol(item.getNextSymbol())) {
-                let Ij = GO(I, item.getNextSymbol(), grammer, LR1Grammer);
+                let Ij = go(I, item.getNextSymbol());
 
                 if (Ij && Ij.items.length) {
                     ACTION[index][item.getNextSymbol()] = {
@@ -59,7 +60,7 @@ module.exports = (grammer) => {
     forEach(C, (I, index) => {
         GOTO[index] = GOTO[index] || {};
         forEach(N, (A) => {
-            let Ij = GO(I, A, grammer, LR1Grammer);
+            let Ij = go(I, A);
             if (Ij && Ij.items.length) {
                 GOTO[index][A] = getStateIndex(C, Ij);
             }

@@ -25,20 +25,41 @@ let {
  *
  * @param productions
  */
-module.exports = (I, X, grammer, LR1Grammer) => {
-    return buildClosure(
-        reduce(filter(I.items, (item) => {
+module.exports = (grammer, LR1Grammer) => {
+    let getStartItems = (I, X) => {
+        let nextSymbolX = filter(I.items, (item) => {
             return item.getNextSymbol() === X;
-        }), (prev, item) => { // eslint-disable-line
+        });
+
+        let startItems = reduce(nextSymbolX, (prev, item) => { // eslint-disable-line
             if (item.restIsNotEmpty()) {
                 prev.push(item.nextPositionItem());
             }
 
             return prev;
-        }, []),
+        }, []);
 
-        grammer,
+        return startItems;
+    };
 
-        LR1Grammer
-    );
+    return (I, X) => {
+        let startItems = null;
+
+        I.cache_startItems = I.cache_startItems || {};
+
+        if (I.cache_startItems[X]) {
+            startItems = I.cache_startItems[X];
+        } else {
+            startItems = getStartItems(I, X);
+            I.cache_startItems[X] = startItems;
+        }
+
+        return buildClosure(
+            startItems,
+
+            grammer,
+
+            LR1Grammer
+        );
+    };
 };

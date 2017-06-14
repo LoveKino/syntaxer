@@ -4,8 +4,11 @@ let {
     LR1Table, parse
 } = require('../src');
 
-let {LR1Itemer} = require('../src/base/LR1Item');
+let {
+    LR1Itemer
+} = require('../src/base/LR1Item');
 let LR1C = require('../src/LR/LR1/LR1CanonicalCollection');
+let GO = require('../src/LR/LR1/go');
 let ctxFreeGrammer = require('../src/base/ctxFreeGrammer');
 
 let g2 = require('./fixture/grammer2');
@@ -27,9 +30,13 @@ let jsoneq = require('cl-jsoneq');
 let testGrammer = (g) => {
     let grammer = ctxFreeGrammer(g.grammer);
     let lr1table = LR1Table(grammer);
+    let LR1Grammer = LR1Itemer(grammer);
+    let go = GO(grammer, LR1Grammer);
+    let ret = LR1C(grammer, LR1Grammer, go);
 
-    let ret = LR1C(grammer, LR1Itemer(grammer));
-    ret = ret.map(({items}) => items.map((v) => v.list()));
+    ret = ret.map(({
+        items
+    }) => items.map((v) => v.list()));
 
     forEach(ret, (item) => {
         assert.deepEqual(true, contain(g.LR1C, item, {
