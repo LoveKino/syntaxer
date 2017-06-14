@@ -27,25 +27,43 @@ module.exports = (grammer, LR1Grammer, go) => {
         ], grammer, LR1Grammer)
     ];
 
-    while (true) { // eslint-disable-line
-        // for every item
-        let newC = reduce(C, (prev, I) => {
-            // for every symbol
-            return reduce(symbols, (pre, X) => {
-                let newState = go(I, X);
+    let appendedC = C;
 
-                if (newState && newState.items.length && !contain(C, newState, {
+    while (true) { // eslint-disable-line
+        let newAppendedC = [];
+
+        for (let i = 0; i < appendedC.length; i++) {
+            let I = appendedC[i];
+            let gotoSet = getGoToSymbolsSet(symbols, I, go);
+            for (let j = 0; j < gotoSet.length; j++) {
+                let state = gotoSet[j];
+                if (!contain(C, state, {
                     eq: sameClosure
                 })) {
-                    pre.push(newState);
+                    newAppendedC.push(state);
                 }
-                return pre;
-            }, prev);
-        }, C.slice(0));
+            }
+        }
 
-        if (newC.length === C.length) break; // no more items
-        C = newC;
+        if (!newAppendedC.length) break;
+
+        appendedC = newAppendedC;
+        C = C.concat(appendedC);
     }
 
     return C;
+};
+
+let getGoToSymbolsSet = (symbols, I, go) => {
+    // for every symbol
+    let set = reduce(symbols, (pre, X) => {
+        let newState = go(I, X);
+
+        if (newState && newState.items.length) {
+            pre.push(newState);
+        }
+        return pre;
+    }, []);
+
+    return set;
 };

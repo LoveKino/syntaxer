@@ -3,6 +3,7 @@
 let {
     reduce, map, flat
 } = require('bolzano');
+
 let jsoneq = require('cl-jsoneq');
 
 /**
