@@ -23,10 +23,9 @@ let state = (g, X, from, to) => {
     let LR1Grammer = LR1Itemer(grammer);
 
     assert.deepEqual(
-        GO(
-            LR1C[from].map(list => LR1Grammer.fromList(list, grammer)),
-            X, grammer, LR1Grammer
-        ).map(v => v.list()),
+        GO({
+            items: LR1C[from].map(list => LR1Grammer.fromList(list, grammer))
+        }, X, grammer, LR1Grammer).items.map(v => v.list()),
 
         LR1C[to]
     );
@@ -60,7 +59,7 @@ describe('LR(1):go', () => {
         ], grammer, LR1Grammer);
 
         let newState = GO(ret, '*', grammer, LR1Grammer);
-        assert.deepEqual(newState.map(item => item.list()), [
+        assert.deepEqual(newState.items.map(item => item.list()), [
             ['STATEMENT', ['*', 'LETTER'], 1, ['$', ';']],
             ['LETTER', ['a'], 0, ['$', ';']]
         ]);

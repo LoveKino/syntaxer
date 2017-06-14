@@ -29,7 +29,7 @@ module.exports = (grammer) => {
 
         // item = [head, body, dotPosition, forwards]
 
-        forEach(I, (item) => {
+        forEach(I.items, (item) => {
             // [S`→ S., $] ϵ Ii
             if (LR1Grammer.isAcceptItem(item)) {
                 //
@@ -46,7 +46,7 @@ module.exports = (grammer) => {
             } else if (isTerminalSymbol(item.getNextSymbol())) {
                 let Ij = GO(I, item.getNextSymbol(), grammer, LR1Grammer);
 
-                if (Ij && Ij.length) {
+                if (Ij && Ij.items.length) {
                     ACTION[index][item.getNextSymbol()] = {
                         type: 'shift',
                         state: getStateIndex(C, Ij)
@@ -60,7 +60,7 @@ module.exports = (grammer) => {
         GOTO[index] = GOTO[index] || {};
         forEach(N, (A) => {
             let Ij = GO(I, A, grammer, LR1Grammer);
-            if (Ij && Ij.length) {
+            if (Ij && Ij.items.length) {
                 GOTO[index][A] = getStateIndex(C, Ij);
             }
         });

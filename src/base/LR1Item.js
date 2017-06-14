@@ -3,7 +3,7 @@
 let First = require('./first');
 
 let {
-    union, reduce, filter
+    union, reduce, filter, findIndex
 } = require('bolzano');
 
 let {
@@ -97,6 +97,29 @@ let LR1Itemer = (grammer) => {
         return head1 === head2 && dotPosition1 === dotPosition2 && eqList(forwards1, forwards2) && eqList(body1, body2);
     };
 
+    var samePrefix = (item1, item2) => {
+        let [head1, body1, dotPosition1] = item1.list();
+        let [head2, body2, dotPosition2] = item2.list();
+        return head1 === head2 && dotPosition1 === dotPosition2 && eqList(body1, body2);
+    };
+
+    var compressItemSet = (I) => {
+        return reduce(I, (prev, item) => {
+            let itemIndex = findIndex(prev, (v) => {
+                return samePrefix(item, v);
+            });
+
+            if (itemIndex !== -1) {
+                // expand
+                prev[itemIndex].concatForwards(item.getForwards());
+            } else {
+                prev.push(item);
+            }
+
+            return prev;
+        }, []);
+    };
+
     let initItem = () => {
         let item = buildLR1Item(
             [grammer.EXPAND_START_SYMBOL, [grammer.startSymbol]],
@@ -130,7 +153,8 @@ let LR1Itemer = (grammer) => {
         initItem,
         unionLR1Items,
         fromList,
-        supItem
+        supItem,
+        compressItemSet
     };
 };
 

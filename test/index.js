@@ -29,7 +29,7 @@ let testGrammer = (g) => {
     let lr1table = LR1Table(grammer);
 
     let ret = LR1C(grammer, LR1Itemer(grammer));
-    ret = ret.map(list => list.map((v) => v.list()));
+    ret = ret.map(({items}) => items.map((v) => v.list()));
 
     forEach(ret, (item) => {
         assert.deepEqual(true, contain(g.LR1C, item, {

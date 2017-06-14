@@ -35,7 +35,7 @@ module.exports = (grammer, LR1Grammer) => {
             return reduce(symbols, (pre, X) => {
                 let newState = GO(I, X, grammer, LR1Grammer);
 
-                if (newState && newState.length && !contain(C, newState, {
+                if (newState && newState.items.length && !contain(C, newState, {
                     eq: sameClosure
                 })) {
                     pre.push(newState);

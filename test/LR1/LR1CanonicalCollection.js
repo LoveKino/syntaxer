@@ -23,7 +23,7 @@ describe('LR1CanonicalCollection', () => {
 
         let ret = LR1C(grammer, LR1Itemer(grammer));
 
-        ret = ret.map(list => list.map((v) => v.list()));
+        ret = ret.map(({items}) => items.map((v) => v.list()));
 
         assert.deepEqual(ret.length, g2.LR1C.length);
 

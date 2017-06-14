@@ -27,7 +27,7 @@ let {
  */
 module.exports = (I, X, grammer, LR1Grammer) => {
     return buildClosure(
-        reduce(filter(I, (item) => {
+        reduce(filter(I.items, (item) => {
             return item.getNextSymbol() === X;
         }), (prev, item) => { // eslint-disable-line
             if (item.restIsNotEmpty()) {

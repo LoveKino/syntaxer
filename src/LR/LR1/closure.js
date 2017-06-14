@@ -1,7 +1,7 @@
 'use strict';
 
 let {
-    reduce, map, findIndex, flat
+    reduce, map, flat
 } = require('bolzano');
 let jsoneq = require('cl-jsoneq');
 
@@ -15,18 +15,18 @@ let jsoneq = require('cl-jsoneq');
  * LR(1) item: [head, body, dotPosition, [...forward]]
  */
 
-let buildClosure = (I, grammer, LR1Grammer) => {
-    let closure = I;
-
+let buildClosure = (items, grammer, LR1Grammer) => {
     while (true) { // eslint-disable-line
-        let newI = expand(closure, grammer, LR1Grammer);
+        let newI = expand(items, grammer, LR1Grammer);
 
-        if (getSum(newI) === getSum(closure)) break; // no more
+        if (getSum(newI) === getSum(items)) break; // no more
 
-        closure = newI;
+        items = newI;
     }
 
-    return compress(closure);
+    return {
+        items: LR1Grammer.compressItemSet(items)
+    };
 };
 
 let expand = (I, grammer, LR1Grammer) => {
@@ -55,23 +55,6 @@ let expand = (I, grammer, LR1Grammer) => {
     }, I.slice(0));
 };
 
-let compress = (I) => {
-    return reduce(I, (prev, item) => {
-        let itemIndex = findIndex(prev, (v) => {
-            return jsoneq(v.list().slice(0, -1), item.list().slice(0, -1));
-        });
-
-        if (itemIndex !== -1) {
-            // expand
-            prev[itemIndex].concatForwards(item.getForwards());
-        } else {
-            prev.push(item);
-        }
-
-        return prev;
-    }, []);
-};
-
 let getSum = (I) => {
     return reduce(I, (prev, item) => {
         return prev + item.getForwards().length;
@@ -79,7 +62,7 @@ let getSum = (I) => {
 };
 
 let sameClosure = (closure1, closure2) => {
-    return jsoneq(map(closure1, (v) => v.list()), map(closure2, (v) => v.list()));
+    return jsoneq(map(closure1.items, (v) => v.list()), map(closure2.items, (v) => v.list()));
 };
 
 module.exports = {

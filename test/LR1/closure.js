@@ -22,7 +22,7 @@ let testClosure = (g) => {
     forEach(g.LR1C, (item) => {
         assert.deepEqual(item, buildClosure([
             LR1Grammer.fromList(item[0], grammer)
-        ], grammer, LR1Grammer).map(v => {
+        ], grammer, LR1Grammer).items.map(v => {
             return v.list();
         }));
     });
@@ -39,7 +39,7 @@ describe('LR1-closure', () => {
         let LR1Grammer = LR1Itemer(grammer);
         let ret = buildClosure([
             LR1Grammer.fromList(['S`', ['E'], 0, ['$']], grammer)
-        ], grammer, LR1Grammer);
+        ], grammer, LR1Grammer).items;
 
         assert.deepEqual([
             ['S`', ['E'], 0, ['$']],
@@ -55,7 +55,7 @@ describe('LR1-closure', () => {
 
         let ret = buildClosure([
             LR1Grammer.fromList(['S`', ['S'], 0, ['$']], grammer)
-        ], grammer, LR1Grammer);
+        ], grammer, LR1Grammer).items;
 
         assert.deepEqual(ret.map((v) => v.list()), [
             ['S`', ['S'], 0, ['$']],
