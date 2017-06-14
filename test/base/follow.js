@@ -1,6 +1,7 @@
 'use strict';
 
 let follow = require('../../src/base/follow');
+let First = require('../../src/base/first');
 
 let g1 = require('../fixture/grammer1');
 
@@ -11,7 +12,8 @@ let assert = require('assert');
 describe('follow', () => {
     it('index', () => {
         let grammer = ctxFreeGrammer(g1);
-        let map = follow(grammer);
+        let first = First(grammer);
+        let map = follow(grammer, first);
 
         assert.deepEqual(map, {
             E: ['$', ')'],

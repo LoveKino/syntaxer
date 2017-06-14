@@ -8,79 +8,92 @@ let {
     isArray
 } = require('basetype');
 
-/**
- * first set of sentential form
- *
- * α ϵ (T U N)*
- *
- * FIRST(α) = { a | α *=> a..., a ϵ T }
- *
- * if α *=> ε, then ε ϵ FIRST(α)
- *
- * A → ε => ['A', []]
- *
- * using null stand for ε
- */
+module.exports = (grammer) => {
+    // cache first set
+    let firstMap = {};
 
-let first = (X, grammer) => {
-    let {
-        isTerminalSymbol,
-        getProductionsOf,
-        isEmptyProduction,
-        getBody,
-        EPSILON
-    } = grammer;
+    /**
+     * first set of sentential form
+     *
+     * α ϵ (T U N)*
+     *
+     * FIRST(α) = { a | α *=> a..., a ϵ T }
+     *
+     * if α *=> ε, then ε ϵ FIRST(α)
+     *
+     * A → ε => ['A', []]
+     *
+     * using null stand for ε
+     */
 
-    if (isTerminalSymbol(X)) {
-        return [X];
-    } else {
-        // find all productions start with X
-        let ps = getProductionsOf(X);
+    let first = (X) => {
+        if (firstMap[X]) return firstMap[X];
+        let ret = firstSet(X);
+        firstMap[X] = ret;
+        return ret;
+    };
 
-        return reduce(ps, (prev, production) => {
-            let body = getBody(production);
+    let firstSet = (X) => {
+        let {
+            isTerminalSymbol,
+            getProductionsOf,
+            isEmptyProduction,
+            getBody,
+            EPSILON
+        } = grammer;
 
-            if (isEmptyProduction(production)) {
-                return union(prev, [EPSILON]); // union ε
-            } else {
-                if (isTerminalSymbol(body[0])) {
-                    return union(prev, [body[0]]);
+        if (isTerminalSymbol(X)) {
+            return [X];
+        } else {
+            // find all productions start with X
+            let ps = getProductionsOf(X);
+
+            return reduce(ps, (prev, production) => {
+                let body = getBody(production);
+
+                if (isEmptyProduction(production)) {
+                    return union(prev, [EPSILON]); // union ε
                 } else {
-                    return union(prev, firstList(body, grammer));
+                    if (isTerminalSymbol(body[0])) {
+                        return union(prev, [body[0]]);
+                    } else {
+                        return union(prev, firstList(body, grammer));
+                    }
                 }
+            }, []);
+        }
+    };
+
+    /**
+     * [...ab...]
+     */
+    let firstList = (body) => {
+        let {
+            EPSILON
+        } = grammer;
+
+        let ret = [];
+        forEach(body, (y, index) => {
+            let set = first(y);
+
+            ret = union(ret, difference(set, [EPSILON]));
+            if (!contain(set, EPSILON)) { // stop
+                return true;
             }
-        }, []);
-    }
-};
 
-/**
- * [...ab...]
- */
-let firstList = (body, grammer) => {
-    let {
-        EPSILON
-    } = grammer;
+            if (index === body.length - 1) {
+                ret = union(ret, [EPSILON]);
+            }
+        });
 
-    let ret = [];
-    forEach(body, (y, index) => {
-        let set = first(y, grammer);
-        ret = union(ret, difference(set, [EPSILON]));
-        if (!contain(set, EPSILON)) { // stop
-            return true;
+        return ret;
+    };
+
+    return (alpha) => {
+        if (isArray(alpha)) {
+            return firstList(alpha);
+        } else {
+            return first(alpha);
         }
-
-        if (index === body.length - 1) {
-            ret = union(ret, [EPSILON]);
-        }
-    });
-
-    return ret;
-};
-
-module.exports = (alpha, grammer) => {
-    if (isArray(alpha)) {
-        return firstList(alpha, grammer);
-    } else {
-        return first(alpha, grammer);
-    }
+    };
 };

@@ -15,7 +15,6 @@ const {
     END_SYMBOL, EXPAND_START_SYMBOL, EPSILON
 } = require('./constant');
 
-
 /**
  * context free grammer is read-only
  */

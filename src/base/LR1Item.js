@@ -1,6 +1,6 @@
 'use strict';
 
-let first = require('./first');
+let First = require('./first');
 
 let {
     union, reduce, filter
@@ -11,6 +11,8 @@ let {
 } = require('../util');
 
 let LR1Itemer = (grammer) => {
+    let first = First(grammer);
+
     let buildLR1Item = (production, dotPosition, forwards) => {
         let {
             getHead, getBody, isTerminalSymbol, isEndSymbol
@@ -35,7 +37,7 @@ let LR1Itemer = (grammer) => {
         let getAdjoints = () => {
             let ret = reduce(getForwards(), (prev, letter) => {
                 let beta = afterNextRest();
-                let firstSet = beta.length ? first(beta.concat([letter]), grammer) : [letter];
+                let firstSet = beta.length ? first(beta.concat([letter])) : [letter];
 
                 return union(prev, filter(firstSet, (item) => isTerminalSymbol(item) || isEndSymbol(item)));
             }, []);
@@ -79,8 +81,8 @@ let LR1Itemer = (grammer) => {
     };
 
     // S` -> S.
-    var acceptItem = (grammer) => {
-        return buildLR1Item([grammer.EXPAND_START_SYMBOL, [grammer.startSymbol]], 1, [grammer.END_SYMBOL], grammer);
+    var acceptItem = () => {
+        return buildLR1Item([grammer.EXPAND_START_SYMBOL, [grammer.startSymbol]], 1, [grammer.END_SYMBOL]);
     };
 
     let isAcceptItem = (item) => {
@@ -92,14 +94,12 @@ let LR1Itemer = (grammer) => {
         let [head1, body1, dotPosition1, forwards1] = item1.list();
         let [head2, body2, dotPosition2, forwards2] = item2.list();
 
-        return head1 === head2 && eqList(body1, body2) && dotPosition1 === dotPosition2 && eqList(forwards1, forwards2);
+        return head1 === head2 && dotPosition1 === dotPosition2 && eqList(forwards1, forwards2) && eqList(body1, body2);
     };
 
-    let initItem = (grammer) => {
+    let initItem = () => {
         let item = buildLR1Item(
-            [
-                grammer.EXPAND_START_SYMBOL, [grammer.startSymbol]
-            ],
+            [grammer.EXPAND_START_SYMBOL, [grammer.startSymbol]],
             0, [grammer.END_SYMBOL]
         );
 
@@ -112,15 +112,15 @@ let LR1Itemer = (grammer) => {
         });
     };
 
-    let fromList = ([head, body, dotPosition, forwards], grammer) => {
-        return buildLR1Item([head, body], dotPosition, forwards, grammer);
+    let fromList = ([head, body, dotPosition, forwards]) => {
+        return buildLR1Item([head, body], dotPosition, forwards);
     };
 
     /**
      * [B → .γ, b]
      */
-    let supItem = (production, symbol, grammer) => {
-        return buildLR1Item(production, 0, [symbol], grammer);
+    let supItem = (production, symbol) => {
+        return buildLR1Item(production, 0, [symbol]);
     };
 
     return {

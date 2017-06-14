@@ -4,8 +4,6 @@ let {
     contain, forEach, difference, union, reduce
 } = require('bolzano');
 
-let first = require('./first');
-
 /**
  * FOLLOW(A) = { a | S *⇒ ...Aa..., a ϵ T }
  *
@@ -19,7 +17,7 @@ let first = require('./first');
 /**
  * generate follow map
  */
-module.exports = (grammer) => {
+module.exports = (grammer, first) => {
     let {
         startSymbol, isNoneTerminalSymbol, EPSILON, productions, getBody, getHead, END_SYMBOL
     } = grammer;

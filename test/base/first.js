@@ -1,6 +1,6 @@
 'use strict';
 
-let first = require('../../src/base/first');
+let First = require('../../src/base/first');
 
 let assert = require('assert');
 
@@ -11,6 +11,8 @@ let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
 describe('first', () => {
     it('index', () => {
         let grammer = ctxFreeGrammer(g1);
+        let first = First(grammer);
+
         assert.deepEqual(
             ['(', 'id'],
             first('E', grammer)

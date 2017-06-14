@@ -158,7 +158,9 @@ output
 │   │   │──first.js
 │   │   └──follow.js
 │   │──index.js
-│   └──reduceAst.js
+│   │──reduceAst.js
+│   └──util
+│       └──index.js
 └──test
     │──LR
     │   └──index.js

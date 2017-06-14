@@ -158,7 +158,9 @@ console.log(JSON.stringify(ast, null, 4));
 │   │   │──first.js
 │   │   └──follow.js
 │   │──index.js
-│   └──reduceAst.js
+│   │──reduceAst.js
+│   └──util
+│       └──index.js
 └──test
     │──LR
     │   └──index.js
