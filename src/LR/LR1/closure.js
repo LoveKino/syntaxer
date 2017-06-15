@@ -18,10 +18,13 @@ let {
 
 let buildClosure = (items, grammer, LR1Grammer) => {
     let appendedItems = items;
-
     let itemsMap = {};
+    let prefixMap = {};
+
     for (let i = 0; i < items.length; i++) {
-        itemsMap[items[i].serialize()] = true;
+        let item = items[i];
+        itemsMap[item.serialize()] = true;
+        prefixMap[item.serializePrefix()] = item;
     }
 
     while (true) { // eslint-disable-line
@@ -37,8 +40,15 @@ let buildClosure = (items, grammer, LR1Grammer) => {
             let itemId = item.serialize();
 
             if (!itemsMap[itemId]) {
+                // add new item
                 noRepeatedNewItems.push(item);
                 itemsMap[item.serialize()] = true;
+                let prefixCacheItem = prefixMap[item.serializePrefix()];
+                if (prefixCacheItem) {
+                    prefixMap[item.serializePrefix()] = prefixCacheItem.concatForwards(item.getForwards());
+                } else {
+                    prefixMap[item.serializePrefix()] = item;
+                }
             }
         }
 
@@ -50,9 +60,14 @@ let buildClosure = (items, grammer, LR1Grammer) => {
 
     let serializedText = JSON.stringify(Object.keys(itemsMap).sort());
 
+    let result = [];
+
+    for (let name in prefixMap) {
+        result.push(prefixMap[name]);
+    }
+
     return {
-        items: LR1Grammer.compressItemSet(items),
-        itemsMap,
+        items: result,
         serializedText
     };
 };

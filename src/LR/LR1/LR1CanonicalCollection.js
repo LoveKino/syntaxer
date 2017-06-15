@@ -1,10 +1,10 @@
 'use strict';
 
 let {
-    buildClosure, sameClosure
+    buildClosure
 } = require('./closure');
 let {
-    reduce, contain
+    reduce
 } = require('bolzano');
 
 /**
@@ -21,11 +21,13 @@ module.exports = (grammer, LR1Grammer, go) => {
         symbols
     } = grammer;
 
-    let C = [
-        buildClosure([
-            LR1Grammer.initItem(grammer)
-        ], grammer, LR1Grammer)
-    ];
+    let initClosure = buildClosure([
+        LR1Grammer.initItem(grammer)
+    ], grammer, LR1Grammer);
+
+    let C = [initClosure];
+    let canonicalCollectionMap = {};
+    canonicalCollectionMap[initClosure.serializedText] = true;
 
     let appendedC = C;
 
@@ -35,12 +37,15 @@ module.exports = (grammer, LR1Grammer, go) => {
         for (let i = 0; i < appendedC.length; i++) {
             let I = appendedC[i];
             let gotoSet = getGoToSymbolsSet(symbols, I, go);
+
             for (let j = 0; j < gotoSet.length; j++) {
                 let state = gotoSet[j];
-                if (!contain(C, state, {
-                    eq: sameClosure
-                })) {
+                let serializedText = state.serializedText;
+
+                if (!canonicalCollectionMap[serializedText]) {
+                    // add new state
                     newAppendedC.push(state);
+                    canonicalCollectionMap[serializedText] = true;
                 }
             }
         }

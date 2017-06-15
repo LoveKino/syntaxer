@@ -3,12 +3,8 @@
 let First = require('./first');
 
 let {
-    union, reduce, filter, findIndex, flat, map
+    union, reduce, filter, flat, map
 } = require('bolzano');
-
-let {
-    eqList
-} = require('../util');
 
 let LR1Itemer = (grammer) => {
     let {
@@ -37,24 +33,32 @@ let LR1Itemer = (grammer) => {
 
         // change the forwards
         let concatForwards = (newForwards) => {
-            forwards = union(forwards, newForwards);
+            return buildLR1Item(production, dotPosition, union(forwards, newForwards));
         };
+
+        let adjoints = null;
 
         // [A → α.Bβ, a], FIRST(βa)
         let getAdjoints = () => {
-            let beta = afterNextRest();
-            let forwards = getForwards();
+            if (adjoints === null) {
+                let beta = afterNextRest();
+                let forwards = getForwards();
 
-            let ret = reduce(forwards, (prev, letter) => {
-                let firstSet = beta.length ? first(beta.concat([letter])) : [letter];
+                let ret = reduce(forwards, (prev, letter) => {
+                    let firstSet = beta.length ? first(beta.concat([letter])) : [letter];
+                    return prev.concat(filter(firstSet, (item) => isTerminalSymbol(item) || isEndSymbol(item)));
+                }, []);
 
-                return union(prev, filter(firstSet, (item) => isTerminalSymbol(item) || isEndSymbol(item)));
-            }, []);
+                adjoints = ret;
 
-            return ret;
+                return ret;
+            } else {
+                return adjoints;
+            }
         };
 
-        let isReducedItem = () => { // rest = ε && a = $
+        // rest = ε && a = $
+        let isReducedItem = () => {
             return !afterNextRest().length && getForwards().length === 1 && isEndSymbol(getForwards()[0]);
         };
 
@@ -73,8 +77,22 @@ let LR1Itemer = (grammer) => {
 
         let getProduction = () => production;
 
+        let serializeId = null;
+
         let serialize = () => {
-            return JSON.stringify([production, dotPosition, forwards.sort()]);
+            if (serializeId === null) {
+                serializeId = JSON.stringify([production, dotPosition, forwards.sort()]);
+            }
+            return serializeId;
+        };
+
+        let serializePrefixId = null;
+        let serializePrefix = () => {
+            if (serializePrefixId === null) {
+                serializePrefixId = JSON.stringify([production, dotPosition]);
+            }
+
+            return serializePrefixId;
         };
 
         return {
@@ -90,7 +108,8 @@ let LR1Itemer = (grammer) => {
             nextPositionItem,
             getGrammer,
             isReduceItem,
-            serialize
+            serialize,
+            serializePrefix
         };
     };
 
@@ -103,35 +122,8 @@ let LR1Itemer = (grammer) => {
         return sameItem(acceptItem(item.getGrammer()), item);
     };
 
-    // TODO
     var sameItem = (item1, item2) => {
-        let [head1, body1, dotPosition1, forwards1] = item1.list();
-        let [head2, body2, dotPosition2, forwards2] = item2.list();
-
-        return head1 === head2 && dotPosition1 === dotPosition2 && eqList(forwards1, forwards2) && eqList(body1, body2);
-    };
-
-    var samePrefix = (item1, item2) => {
-        let [head1, body1, dotPosition1] = item1.list();
-        let [head2, body2, dotPosition2] = item2.list();
-        return head1 === head2 && dotPosition1 === dotPosition2 && eqList(body1, body2);
-    };
-
-    var compressItemSet = (I) => {
-        return reduce(I, (prev, item) => {
-            let itemIndex = findIndex(prev, (v) => {
-                return samePrefix(item, v);
-            });
-
-            if (itemIndex !== -1) {
-                // expand
-                prev[itemIndex].concatForwards(item.getForwards());
-            } else {
-                prev.push(item);
-            }
-
-            return prev;
-        }, []);
+        return item1.serialize() === item2.serialize();
     };
 
     let initItem = () => {
@@ -141,12 +133,6 @@ let LR1Itemer = (grammer) => {
         );
 
         return item;
-    };
-
-    let unionLR1Items = (list1, list2) => {
-        return union(list1, list2, {
-            eq: sameItem
-        });
     };
 
     let fromList = ([head, body, dotPosition, forwards]) => {
@@ -160,8 +146,14 @@ let LR1Itemer = (grammer) => {
         return buildLR1Item(production, 0, [symbol]);
     };
 
-    // TODO cache
+    let expandCacheMap = {};
     let expandItem = (item) => {
+        let serializeId = item.serialize();
+
+        if (expandCacheMap[serializeId]) {
+            return expandCacheMap[serializeId].slice(0);
+        }
+
         let {
             getNextSymbol,
             getAdjoints,
@@ -177,6 +169,8 @@ let LR1Itemer = (grammer) => {
             supItem(production, END_SYMBOL)
         ] : map(getAdjoints(), (b) => supItem(production, b))));
 
+        expandCacheMap[serializeId] = newItems;
+
         return newItems;
     };
 
@@ -186,10 +180,8 @@ let LR1Itemer = (grammer) => {
         isAcceptItem,
         sameItem,
         initItem,
-        unionLR1Items,
         fromList,
-        supItem,
-        compressItemSet
+        supItem
     };
 };
 
