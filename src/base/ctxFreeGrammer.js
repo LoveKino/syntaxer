@@ -10,7 +10,7 @@
  *
  * production = [head, body]
  *
- * assumption: there is no whitespace in head or any body
+ * TODO validate
  */
 
 const {
@@ -21,7 +21,6 @@ const {
  * context free grammer is read-only
  */
 
-// TODO validate
 module.exports = ({
     startSymbol,
     T, N,
@@ -53,9 +52,7 @@ module.exports = ({
 
     let isEndSymbol = (v) => v === END_SYMBOL;
 
-    let getBodyId = (body) => body.join(' ');
-
-    let getProductionId = ([head, body]) => [head, getBodyId(body)].join(' ');
+    let getBodyId = (body) => JSON.stringify(body);
 
     return {
         isTerminalSymbol,
@@ -64,7 +61,6 @@ module.exports = ({
         isEmptyProduction,
         getBody,
         getBodyId,
-        getProductionId,
         getHead,
         EPSILON,
         END_SYMBOL,

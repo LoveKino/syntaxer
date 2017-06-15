@@ -1,10 +1,8 @@
 'use strict';
 
 let {
-    reduce, map, contain
+    reduce
 } = require('bolzano');
-
-let jsoneq = require('cl-jsoneq');
 
 /**
  *
@@ -21,6 +19,11 @@ let jsoneq = require('cl-jsoneq');
 let buildClosure = (items, grammer, LR1Grammer) => {
     let appendedItems = items;
 
+    let itemsMap = {};
+    for (let i = 0; i < items.length; i++) {
+        itemsMap[items[i].serialize()] = true;
+    }
+
     while (true) { // eslint-disable-line
         let newAppendedItems = reduce(appendedItems, (prev, item) => {
             let newItems = LR1Grammer.expandItem(item);
@@ -31,11 +34,11 @@ let buildClosure = (items, grammer, LR1Grammer) => {
 
         for (let i = 0; i < newAppendedItems.length; i++) {
             let item = newAppendedItems[i];
+            let itemId = item.serialize();
 
-            if (!contain(items, item, {
-                eq: LR1Grammer.sameItem
-            })) {
+            if (!itemsMap[itemId]) {
                 noRepeatedNewItems.push(item);
+                itemsMap[item.serialize()] = true;
             }
         }
 
@@ -45,14 +48,16 @@ let buildClosure = (items, grammer, LR1Grammer) => {
         appendedItems = noRepeatedNewItems;
     }
 
+    let serializedText = JSON.stringify(Object.keys(itemsMap).sort());
+
     return {
-        items: LR1Grammer.compressItemSet(items)
+        items: LR1Grammer.compressItemSet(items),
+        itemsMap,
+        serializedText
     };
 };
 
-let sameClosure = (closure1, closure2) => {
-    return jsoneq(map(closure1.items, (v) => v.list()), map(closure2.items, (v) => v.list()));
-};
+let sameClosure = (closure1, closure2) => closure1.serializedText === closure2.serializedText;
 
 module.exports = {
     buildClosure,

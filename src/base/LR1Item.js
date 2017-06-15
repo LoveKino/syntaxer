@@ -73,6 +73,10 @@ let LR1Itemer = (grammer) => {
 
         let getProduction = () => production;
 
+        let serialize = () => {
+            return JSON.stringify([production, dotPosition, forwards.sort()]);
+        };
+
         return {
             getNextSymbol,
             getProduction,
@@ -85,7 +89,8 @@ let LR1Itemer = (grammer) => {
             restIsNotEmpty,
             nextPositionItem,
             getGrammer,
-            isReduceItem
+            isReduceItem,
+            serialize
         };
     };
 

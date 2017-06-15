@@ -1,0 +1,82 @@
+# be careful: space between symbols
+
+S := PROGRAM
+
+PROGRAM := STATEMENTS
+
+STATEMENTS := NONE_EMPTY_STATEMENTS 
+    | EPSILON
+
+NONE_EMPTY_STATEMENTS := STATEMENT 
+    | STATEMENT ; STATEMENTS
+
+STATEMENT := EXP 
+    | LET_EXPRESSION 
+    | IMPORT_EXPRESSION
+
+# import module
+IMPORT_EXPRESSION := import string as variable
+
+# let statement
+LET_EXPRESSION := let VARIABLE_DEFINITION_LIST
+
+VARIABLE_DEFINITION_LIST := VARIABLE_DEFINITION 
+    |  VARIABLE_DEFINITION , VARIABLE_DEFINITION_LIST
+
+VARIABLE_DEFINITION := variable 
+    | variable = EXP
+
+EXP := JSON 
+    | variable 
+    | ABSTRACTION 
+    | APPLICATION
+    | CODE_BLOCK_EXP
+    | CONDITION_EXP
+
+CODE_BLOCK_EXP := { NONE_EMPTY_STATEMENTS }
+
+CONDITION_EXP := EXP ? EXP : EXP
+
+# standard math style function calling, eg: f(1, 2)
+APPLICATION := CALLER ( ) 
+    | CALLER ( EXP_LIST )
+
+# CALLER stands for any thing which can used directly as a function
+CALLER := variable 
+    | APPLICATION 
+    | ( ABSTRACTION )
+
+EXP_LIST := EXP 
+    | EXP , EXP_LIST
+
+# define abstraction
+ABSTRACTION := GUARDED_ABSTRACTION | GUARDED_ABSTRACTION verticalBar ABSTRACTION
+
+GUARDED_ABSTRACTION := ABSTRACTION_BODY | ABSTRACTION_BODY, EXP_LIST
+
+ABSTRACTION_BODY := ( ) -> EXP
+    | ( LIST_VARIABLES ) -> EXP
+
+LIST_VARIABLES := variable 
+    | variable , LIST_VARIABLES
+
+# below is the definition of ordinary json
+JSON := string 
+    | number 
+    | OBJECT 
+    | ARRAY 
+    | true 
+    | false 
+    | null
+
+OBJECT := { KEY_VALUES } 
+    | { }
+
+KEY_VALUES := string : JSON 
+    | string : JSON , KEY_VALUES
+
+ARRAY := [ ] 
+    | [ LIST_VALUES ]
+
+LIST_VALUES := JSON 
+    | JSON , LIST_VALUES
