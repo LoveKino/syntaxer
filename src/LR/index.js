@@ -53,7 +53,7 @@ module.exports = (ACTION, GOTO, {
         if (!act) {
             return {
                 type: 'error',
-                errorMsg: `unexpected symbol (token.tokenType.name) ${token.tokenType.name}, token (token.text) is ${token.text}. Try to find ACTION from state ${state}.`
+                errorMsg: `unexpected symbol (token.name) ${token.name}, token (token.text) is ${token.text}. Try to find ACTION from state ${state}.`
             };
         } else {
             return act;
@@ -63,7 +63,7 @@ module.exports = (ACTION, GOTO, {
     let goTo = (state, token) => {
         let nextState = GOTO[state][token.name];
         if (nextState === undefined) {
-            throw new Error(`fail to goto state from ${state} and symbol (token.tokenType.name) is ${token.tokenType.name}, token (token.text) is ${token.text}. Try to do GOTO from state ${state}, but next state not exists.`);
+            throw new Error(`fail to goto state from ${state} and symbol (token.name) is ${token.name}, token (token.text) is ${token.text}. Try to do GOTO from state ${state}, but next state not exists.`);
         }
         return nextState;
     };
