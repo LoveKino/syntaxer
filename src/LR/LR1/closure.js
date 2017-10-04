@@ -45,7 +45,7 @@ let buildClosure = (items, grammer, LR1Grammer) => {
                 itemsMap[item.serialize()] = true;
                 let prefixCacheItem = prefixMap[item.serializePrefix()];
                 if (prefixCacheItem) {
-                    prefixMap[item.serializePrefix()] = prefixCacheItem.concatForwards(item.getForwards());
+                    prefixMap[item.serializePrefix()] = prefixCacheItem.concatForwards(item.forwards);
                 } else {
                     prefixMap[item.serializePrefix()] = item;
                 }

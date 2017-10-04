@@ -18,29 +18,25 @@ let {
  * generate follow map
  */
 module.exports = (grammer, first) => {
-    let {
-        startSymbol, isNoneTerminalSymbol, EPSILON, productions, getBody, getHead, END_SYMBOL
-    } = grammer;
-
     let map = {};
 
-    map[startSymbol] = [END_SYMBOL];
+    map[grammer.startSymbol] = [grammer.END_SYMBOL];
 
     let oldLen = getNum(map);
 
     while (true) { // eslint-disable-line
-        forEach(productions, (production) => { // eslint-disable-line
-            let head = getHead(production);
-            let body = getBody(production);
+        forEach(grammer.productions, (production) => { // eslint-disable-line
+            let head = grammer.getHead(production);
+            let body = grammer.getBody(production);
 
             forEach(body, (item, index) => {
-                if (isNoneTerminalSymbol(item)) {
+                if (grammer.isNoneTerminalSymbol(item)) {
                     let firstRest = first(body.slice(index + 1), grammer);
 
-                    map[item] = union(map[item] || [], difference(firstRest, [EPSILON]));
+                    map[item] = union(map[item] || [], difference(firstRest, [grammer.EPSILON]));
 
                     // β *⇒ ε
-                    if (contain(firstRest, EPSILON) ||
+                    if (contain(firstRest, grammer.EPSILON) ||
                         index === body.length - 1) {
                         map[item] = union(map[item], map[head] || []);
                     }

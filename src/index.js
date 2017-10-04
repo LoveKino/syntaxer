@@ -17,9 +17,6 @@
 let LR = require('./LR');
 let LR1Table = require('./LR/LR1/LR1Table');
 let ctxFreeGrammer = require('./base/ctxFreeGrammer');
-let {
-    forEach
-} = require('bolzano');
 
 /**
  * just used for testing
@@ -31,7 +28,7 @@ let parse = (g, handlers) => {
 
     return (tokens) => {
         let parser = LR(ACTION, GOTO, handlers);
-        forEach(tokens, parser);
+        tokens.forEach(parser);
         return parser(null);
     };
 };

@@ -3,123 +3,86 @@
 let First = require('./first');
 
 let {
-    union, reduce, filter, flat, map
+    union,
+    reduce,
+    filter,
+    flat,
+    map
 } = require('bolzano');
 
 let LR1Itemer = (grammer) => {
-    let {
-        END_SYMBOL,
-        isNoneTerminalSymbol,
-        getProductionsOf
-    } = grammer;
-
     let first = First(grammer);
 
-    let buildLR1Item = (production, dotPosition, forwards) => {
-        let {
-            getHead, getBody, isTerminalSymbol, isEndSymbol
-        } = grammer;
+    let LR1Item = function(production, dotPosition, forwards) {
+        this.production = production;
+        this.dotPosition = dotPosition;
+        this.forwards = forwards;
 
-        // [A → α.Bβ, a]
-        let getNextSymbol = () => {
-            return getBody(production)[dotPosition];
-        };
-
-        let getForwards = () => forwards;
-
-        let afterNextRest = () => getBody(production).slice(dotPosition + 1);
-
-        let list = () => [getHead(production), getBody(production), dotPosition, forwards];
-
-        // change the forwards
-        let concatForwards = (newForwards) => {
-            return buildLR1Item(production, dotPosition, union(forwards, newForwards));
-        };
-
-        let adjoints = null;
-
-        // [A → α.Bβ, a], FIRST(βa)
-        let getAdjoints = () => {
-            if (adjoints === null) {
-                let beta = afterNextRest();
-                let forwards = getForwards();
-
-                let ret = reduce(forwards, (prev, letter) => {
-                    let firstSet = beta.length ? first(beta.concat([letter])) : [letter];
-                    return prev.concat(filter(firstSet, (item) => isTerminalSymbol(item) || isEndSymbol(item)));
-                }, []);
-
-                adjoints = ret;
-
-                return ret;
-            } else {
-                return adjoints;
-            }
-        };
-
-        // rest = ε && a = $
-        let isReducedItem = () => {
-            return !afterNextRest().length && getForwards().length === 1 && isEndSymbol(getForwards()[0]);
-        };
-
-        let restIsNotEmpty = () => getBody(production).length && dotPosition < getBody(production).length;
-
-        let nextPositionItem = () => {
-            return buildLR1Item(production, dotPosition + 1, forwards, grammer);
-        };
-
-        let getGrammer = () => grammer;
-
-        // [A → α., a] ϵ Ii, A≠S`
-        let isReduceItem = () => {
-            return dotPosition === getBody(production).length;
-        };
-
-        let getProduction = () => production;
-
-        let serializeId = null;
-
-        let serialize = () => {
-            if (serializeId === null) {
-                serializeId = JSON.stringify([production, dotPosition, forwards.sort()]);
-            }
-            return serializeId;
-        };
-
-        let serializePrefixId = null;
-        let serializePrefix = () => {
-            if (serializePrefixId === null) {
-                serializePrefixId = JSON.stringify([production, dotPosition]);
-            }
-
-            return serializePrefixId;
-        };
-
-        return {
-            getNextSymbol,
-            getProduction,
-            getForwards,
-            afterNextRest,
-            list,
-            concatForwards,
-            getAdjoints,
-            isReducedItem,
-            restIsNotEmpty,
-            nextPositionItem,
-            getGrammer,
-            isReduceItem,
-            serialize,
-            serializePrefix
-        };
+        this.adjoints = null;
+        this.serializeId = null;
+        this.serializePrefixId = null;
     };
 
-    // S` -> S.
-    var acceptItem = () => {
-        return buildLR1Item([grammer.EXPAND_START_SYMBOL, [grammer.startSymbol]], 1, [grammer.END_SYMBOL]);
+    // [A → α.Bβ, a]
+    LR1Item.prototype.getNextSymbol = function() {
+        return grammer.getBody(this.production)[this.dotPosition];
     };
+    LR1Item.prototype.afterNextRest = function() {
+        return grammer.getBody(this.production).slice(this.dotPosition + 1);
+    };
+    LR1Item.prototype.list = function() {
+        return [grammer.getHead(this.production), grammer.getBody(this.production), this.dotPosition, this.forwards];
+    };
+    // change the forwards
+    LR1Item.prototype.concatForwards = function(newForwards) {
+        return new LR1Item(this.production, this.dotPosition, union(this.forwards, newForwards));
+    };
+    // [A → α.Bβ, a], FIRST(βa)
+    LR1Item.prototype.getAdjoints = function() {
+        if (this.adjoints === null) {
+            let beta = this.afterNextRest();
+            let ret = reduce(this.forwards, (prev, letter) => {
+                let firstSet = beta.length ? first(beta.concat([letter])) : [letter];
+                return prev.concat(filter(firstSet, (item) => grammer.isTerminalSymbol(item) || grammer.isEndSymbol(item)));
+            }, []);
+
+            this.adjoints = ret;
+        }
+        return this.adjoints;
+    };
+    // rest = ε && a = $
+    LR1Item.prototype.isReducedItem = function() {
+        return !this.afterNextRest().length && this.forwards.length === 1 && grammer.isEndSymbol(this.forwards[0]);
+    };
+    LR1Item.prototype.restIsNotEmpty = function() {
+        return grammer.getBody(this.production).length && this.dotPosition < grammer.getBody(this.production).length
+    };
+    LR1Item.prototype.nextPositionItem = function() {
+        return new LR1Item(this.production, this.dotPosition + 1, this.forwards);
+    };
+    // [A → α., a] ϵ Ii, A≠S`
+    LR1Item.prototype.isReduceItem = function() {
+        return this.dotPosition === grammer.getBody(this.production).length;
+    };
+    LR1Item.prototype.serialize = function() {
+        if (this.serializeId === null) {
+            this.serializeId = JSON.stringify([this.production, this.dotPosition, this.forwards.sort()]);
+        }
+        return this.serializeId;
+    };
+    LR1Item.prototype.serializePrefix = function() {
+        if (this.serializePrefixId === null) {
+            this.serializePrefixId = JSON.stringify([this.production, this.dotPosition]);
+        }
+
+        return this.serializePrefixId;
+    };
+
+    // S` -> S., $
+    const acceptItem = new LR1Item(grammer.expandedProduction, 1, [grammer.END_SYMBOL]);
 
     let isAcceptItem = (item) => {
-        return sameItem(acceptItem(item.getGrammer()), item);
+        return sameItem(acceptItem, item);
     };
 
     var sameItem = (item1, item2) => {
@@ -127,8 +90,8 @@ let LR1Itemer = (grammer) => {
     };
 
     let initItem = () => {
-        let item = buildLR1Item(
-            [grammer.EXPAND_START_SYMBOL, [grammer.startSymbol]],
+        let item = new LR1Item(
+            grammer.expandedProduction,
             0, [grammer.END_SYMBOL]
         );
 
@@ -136,14 +99,14 @@ let LR1Itemer = (grammer) => {
     };
 
     let fromList = ([head, body, dotPosition, forwards]) => {
-        return buildLR1Item([head, body], dotPosition, forwards);
+        return new LR1Item([head, body], dotPosition, forwards);
     };
 
     /**
      * [B → .γ, b]
      */
     let supItem = (production, symbol) => {
-        return buildLR1Item(production, 0, [symbol]);
+        return new LR1Item(production, 0, [symbol]);
     };
 
     let expandCacheMap = {};
@@ -154,20 +117,15 @@ let LR1Itemer = (grammer) => {
             return expandCacheMap[serializeId].slice(0);
         }
 
-        let {
-            getNextSymbol,
-            getAdjoints,
-            isReducedItem
-        } = item;
-        let next = getNextSymbol();
+        let next = item.getNextSymbol();
 
-        if (!next || !isNoneTerminalSymbol(next)) return [];
+        if (!next || !grammer.isNoneTerminalSymbol(next)) return [];
 
-        let nextProductions = getProductionsOf(next);
+        let nextProductions = grammer.getProductionsOf(next);
 
-        let newItems = flat(map(nextProductions, (production) => isReducedItem() ? [
-            supItem(production, END_SYMBOL)
-        ] : map(getAdjoints(), (b) => supItem(production, b))));
+        let newItems = flat(map(nextProductions, (production) => item.isReducedItem() ? [
+            supItem(production, grammer.END_SYMBOL)
+        ] : map(item.getAdjoints(), (b) => supItem(production, b))));
 
         expandCacheMap[serializeId] = newItems;
 
@@ -176,7 +134,6 @@ let LR1Itemer = (grammer) => {
 
     return {
         expandItem,
-        buildLR1Item,
         isAcceptItem,
         sameItem,
         initItem,

@@ -1,30 +1,30 @@
 'use strict';
 
 let {
-    contain, union, reduce, difference, forEach
+    contain,
+    union,
+    reduce,
+    difference,
+    forEach
 } = require('bolzano');
 
-let {
-    isArray
-} = require('basetype');
+/**
+ * first set of sentential form
+ *
+ * α ϵ (T U N)*
+ *
+ * FIRST(α) = { a | α *=> a..., a ϵ T }
+ *
+ * if α *=> ε, then ε ϵ FIRST(α)
+ *
+ * A → ε => ['A', []]
+ *
+ * using null stand for ε
+ */
 
 module.exports = (grammer) => {
     // cache first set
     let firstMap = {};
-
-    /**
-     * first set of sentential form
-     *
-     * α ϵ (T U N)*
-     *
-     * FIRST(α) = { a | α *=> a..., a ϵ T }
-     *
-     * if α *=> ε, then ε ϵ FIRST(α)
-     *
-     * A → ε => ['A', []]
-     *
-     * using null stand for ε
-     */
 
     let first = (X) => {
         if (firstMap[X]) return firstMap[X];
@@ -34,27 +34,19 @@ module.exports = (grammer) => {
     };
 
     let firstSet = (X) => {
-        let {
-            isTerminalSymbol,
-            getProductionsOf,
-            isEmptyProduction,
-            getBody,
-            EPSILON
-        } = grammer;
-
-        if (isTerminalSymbol(X)) {
+        if (grammer.isTerminalSymbol(X)) {
             return [X];
         } else {
             // find all productions start with X
-            let ps = getProductionsOf(X);
+            let ps = grammer.getProductionsOf(X);
 
             return reduce(ps, (prev, production) => {
-                let body = getBody(production);
+                let body = grammer.getBody(production);
 
-                if (isEmptyProduction(production)) {
-                    return union(prev, [EPSILON]); // union ε
+                if (grammer.isEmptyProduction(production)) {
+                    return union(prev, [grammer.EPSILON]); // union ε
                 } else {
-                    if (isTerminalSymbol(body[0])) {
+                    if (grammer.isTerminalSymbol(body[0])) {
                         return union(prev, [body[0]]);
                     } else {
                         return union(prev, firstList(body, grammer));
@@ -69,11 +61,7 @@ module.exports = (grammer) => {
      * [...ab...]
      */
     let firstList = (body) => {
-        let {
-            EPSILON, getBodyId
-        } = grammer;
-
-        let bodyId = getBodyId(body);
+        let bodyId = grammer.getBodyId(body);
         if (firstListMap[bodyId]) {
             return firstListMap[bodyId];
         }
@@ -82,13 +70,13 @@ module.exports = (grammer) => {
         forEach(body, (y, index) => {
             let set = first(y);
 
-            ret = union(ret, difference(set, [EPSILON]));
-            if (!contain(set, EPSILON)) { // stop
+            ret = union(ret, difference(set, [grammer.EPSILON]));
+            if (!contain(set, grammer.EPSILON)) { // stop
                 return true;
             }
 
             if (index === body.length - 1) {
-                ret = union(ret, [EPSILON]);
+                ret = union(ret, [grammer.EPSILON]);
             }
         });
 
@@ -97,7 +85,7 @@ module.exports = (grammer) => {
     };
 
     return (alpha) => {
-        if (isArray(alpha)) {
+        if (Array.isArray(alpha)) {
             return firstList(alpha);
         } else {
             return first(alpha);

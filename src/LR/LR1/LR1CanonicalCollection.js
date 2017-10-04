@@ -17,10 +17,6 @@ let {
  * item set = [viable prefix, items]
  */
 module.exports = (grammer, LR1Grammer, go) => {
-    let {
-        symbols
-    } = grammer;
-
     let initClosure = buildClosure([
         LR1Grammer.initItem(grammer)
     ], grammer, LR1Grammer);
@@ -36,7 +32,7 @@ module.exports = (grammer, LR1Grammer, go) => {
 
         for (let i = 0; i < appendedC.length; i++) {
             let I = appendedC[i];
-            let gotoSet = getGoToSymbolsSet(symbols, I, go);
+            let gotoSet = getGoToSymbolsSet(grammer.symbols, I, go);
 
             for (let j = 0; j < gotoSet.length; j++) {
                 let state = gotoSet[j];

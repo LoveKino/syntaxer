@@ -14,64 +14,74 @@
  */
 
 const {
-    END_SYMBOL, EXPAND_START_SYMBOL, EPSILON
+    END_SYMBOL,
+    EXPAND_START_SYMBOL,
+    EPSILON
 } = require('./constant');
 
 /**
  * context free grammer is read-only
  */
-
-module.exports = ({
+let CtxFreeGrammer = function({
     startSymbol,
-    T, N,
+    T,
+    N,
     productions
-}) => {
-    let symbols = T.concat(N);
+}) {
+    this.startSymbol = startSymbol;
+    this.T = T;
+    this.N = N;
+    this.productions = productions;
 
-    // cache
-    let noneTerminalProductionMap = getNoneTerminalProductionMap(productions);
-    let terminalMap = listToExistMap(T);
-    let noneTerminalMap = listToExistMap(N);
+    this.symbols = T.concat(N);
 
-    let isTerminalSymbol = (symbol) => !!terminalMap[symbol];
-    let isNoneTerminalSymbol = (symbol) => !!noneTerminalMap[symbol];
+    // to map
+    this.noneTerminalProductionMap = getNoneTerminalProductionMap(this.productions);
+    this.terminalMap = listToExistMap(this.T);
+    this.noneTerminalMap = listToExistMap(this.N);
 
-    /**
-     * get all the productions startSymbol with none terminal symbol
-     */
-    let getProductionsOf = (noneTerminal) => noneTerminalProductionMap[noneTerminal];
+    this.expandedProduction = [EXPAND_START_SYMBOL, [this.startSymbol]];
+}
 
-    // A -> ε
-    let isEmptyProduction = (production) => { // eslint-disable-body
-        return !getBody(production).length;
-    };
-
-    let getBody = (production) => production[1];
-
-    let getHead = (production) => production[0];
-
-    let isEndSymbol = (v) => v === END_SYMBOL;
-
-    let getBodyId = (body) => JSON.stringify(body);
-
-    return {
-        isTerminalSymbol,
-        isNoneTerminalSymbol,
-        getProductionsOf,
-        isEmptyProduction,
-        getBody,
-        getBodyId,
-        getHead,
-        EPSILON,
-        END_SYMBOL,
-        EXPAND_START_SYMBOL,
-        startSymbol,
-        productions,
-        isEndSymbol,
-        symbols,
-        N
-    };
+CtxFreeGrammer.prototype.getProductionByIndex = function(index) {
+    if (index === -1) return this.expandedProduction;
+    return this.producitons[index];
 };
+
+/**
+ * get all the productions start with none terminal symbol
+ */
+CtxFreeGrammer.prototype.getProductionsOf = function(noneTerminal) {
+    return this.noneTerminalProductionMap[noneTerminal];
+};
+CtxFreeGrammer.prototype.getBodyId = function(body) {
+    return JSON.stringify(body);
+};
+CtxFreeGrammer.prototype.isTerminalSymbol = function(symbol) {
+    return !!this.terminalMap[symbol];
+};
+CtxFreeGrammer.prototype.isNoneTerminalSymbol = function(symbol) {
+    return !!this.noneTerminalMap[symbol];
+};
+
+CtxFreeGrammer.prototype.isEndSymbol = function(v) {
+    return v === END_SYMBOL;
+};
+CtxFreeGrammer.prototype.getHead = function(production) {
+    return production[0];
+};
+CtxFreeGrammer.prototype.getBody = function(production) {
+    return production[1];
+};
+
+// A -> ε
+CtxFreeGrammer.prototype.isEmptyProduction = function(production) {
+    return !production[1].length;
+};
+
+CtxFreeGrammer.prototype.EPSILON = EPSILON;
+CtxFreeGrammer.prototype.END_SYMBOL = END_SYMBOL;
+CtxFreeGrammer.prototype.EXPAND_START_SYMBOL = EXPAND_START_SYMBOL;
 
 let listToExistMap = (arr) => {
     let map = {};
@@ -98,3 +108,5 @@ let getNoneTerminalProductionMap = (producitons) => {
 
     return productionMap;
 };
+
+module.exports = (options) => new CtxFreeGrammer(options);

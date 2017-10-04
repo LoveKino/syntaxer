@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/LoveKino/syntaxer#readme",
   "devDependencies": {
+    "benchmark": "^2.1.4",
     "bnfer": "0.0.4",
     "coveralls": "^2.11.15",
     "mocha": "^3.2.0",

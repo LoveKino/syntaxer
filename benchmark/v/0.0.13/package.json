@@ -1,0 +1,14 @@
+{
+  "name": "syntaxer-benchmark-0.0.13",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "syntaxer": "0.0.13"
+  }
+}

@@ -42,10 +42,6 @@
  * 2. reduce production to expand AST
  */
 
-let {
-    map
-} = require('bolzano');
-
 const TERMINAL_TYPE = 'terminal';
 const NONE_TERMINAL_TYPE = 'none-terminal';
 
@@ -64,7 +60,7 @@ let initAST = (startSymbol, tokens = []) => {
     return {
         type: NONE_TERMINAL_TYPE,
         symbol: startSymbol,
-        children: map(tokens, tokenToLeaf)
+        children: tokens.map(tokenToLeaf)
     };
 };
 
@@ -103,7 +99,10 @@ let reduceAST = (ast, start = 0, end = 0, leftSymbol) => {
     let beta = ast.children.splice(start, end - start + 1, midNode);
     midNode.children = beta;
 
-    return {newAst: ast, midNode};
+    return {
+        newAst: ast,
+        midNode
+    };
 };
 
 /**
