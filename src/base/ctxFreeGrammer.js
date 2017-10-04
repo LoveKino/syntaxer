@@ -36,7 +36,6 @@ let CtxFreeGrammer = function({
     this.symbols = T.concat(N);
 
     // to map
-    this.noneTerminalProductionMap = getNoneTerminalProductionMap(this.productions);
     this.noneTerminalProductionIndexMap = getNoneTerminalProductionIndexMap(this.productions);
     this.terminalMap = listToExistMap(this.T);
     this.noneTerminalMap = listToExistMap(this.N);
@@ -52,14 +51,8 @@ CtxFreeGrammer.prototype.getProductionByIndex = function(index) {
 /**
  * get all the productions start with none terminal symbol
  */
-CtxFreeGrammer.prototype.getProductionsOf = function(noneTerminal) {
-    return this.noneTerminalProductionMap[noneTerminal];
-};
 CtxFreeGrammer.prototype.getProductionIndexsOf = function(noneTerminal) {
     return this.noneTerminalProductionIndexMap[noneTerminal];
-};
-CtxFreeGrammer.prototype.getBodyId = function(body) {
-    return JSON.stringify(body);
 };
 CtxFreeGrammer.prototype.isTerminalSymbol = function(symbol) {
     return !!this.terminalMap[symbol];
@@ -99,20 +92,6 @@ let listToExistMap = (arr) => {
 /**
  * get the production map, key is none terminal symbol, keys is the set of producitons
  */
-let getNoneTerminalProductionMap = (producitons) => {
-    let productionMap = {};
-
-    let productionLen = producitons.length;
-    for (let i = 0; i < productionLen; i++) {
-        let production = producitons[i];
-        let head = production[0];
-        productionMap[head] = productionMap[head] || [];
-        productionMap[head].push(production);
-    }
-
-    return productionMap;
-};
-
 let getNoneTerminalProductionIndexMap = (producitons) => {
     let indexMap = {};
 

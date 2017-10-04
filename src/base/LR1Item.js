@@ -46,12 +46,22 @@ LR1Item.prototype.getAdjoints = function() {
     if (this.adjoints === null) {
         let beta = this.afterNextRest();
         let ret = reduce(this.forwards, (prev, letter) => {
-            let firstSet = beta.length ? this.first(beta.concat([letter])) : [letter];
-            return prev.concat(filter(firstSet, (item) => this.grammer.isTerminalSymbol(item) || this.grammer.isEndSymbol(item)));
+            let firstSet = beta.length ? this.first(beta.concat([letter])) : {
+                [letter]: 1
+            };
+
+            for (let name in firstSet) {
+                if (this.grammer.isTerminalSymbol(name) || this.grammer.isEndSymbol(name)) {
+                    prev.push(name);
+                }
+            }
+
+            return prev;
         }, []);
 
         this.adjoints = ret;
     }
+
     return this.adjoints;
 };
 // rest = ε && a = $
@@ -70,13 +80,13 @@ LR1Item.prototype.isReduceItem = function() {
 };
 LR1Item.prototype.serialize = function() {
     if (this.serializeId === null) {
-        this.serializeId = JSON.stringify([this.production, this.dotPosition, this.forwards.sort()]);
+        this.serializeId = this.serializePrefix() + '.' + JSON.stringify([this.forwards.sort()]);
     }
     return this.serializeId;
 };
 LR1Item.prototype.serializePrefix = function() {
     if (this.serializePrefixId === null) {
-        this.serializePrefixId = JSON.stringify([this.production, this.dotPosition]);
+        this.serializePrefixId = this.productionIndex + '.' + this.dotPosition;
     }
 
     return this.serializePrefixId;

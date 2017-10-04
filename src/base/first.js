@@ -1,13 +1,5 @@
 'use strict';
 
-let {
-    contain,
-    union,
-    reduce,
-    difference,
-    forEach
-} = require('bolzano');
-
 /**
  * first set of sentential form
  *
@@ -35,24 +27,35 @@ module.exports = (grammer) => {
 
     let firstSet = (X) => {
         if (grammer.isTerminalSymbol(X)) {
-            return [X];
+            return {
+                [X]: 1
+            };
         } else {
             // find all productions start with X
-            let ps = grammer.getProductionsOf(X);
+            let ps = grammer.getProductionIndexsOf(X);
 
-            return reduce(ps, (prev, production) => {
+            return ps.reduce((prev, productionIndex) => {
+                let production = grammer.getProductionByIndex(productionIndex);
                 let body = grammer.getBody(production);
 
                 if (grammer.isEmptyProduction(production)) {
-                    return union(prev, [grammer.EPSILON]); // union ε
+                    // union ε
+                    prev[grammer.EPSILON] = 1;
                 } else {
                     if (grammer.isTerminalSymbol(body[0])) {
-                        return union(prev, [body[0]]);
+                        // union terminal
+                        prev[body[0]] = 1;
                     } else {
-                        return union(prev, firstList(body, grammer));
+                        let rest = firstList(body, grammer);
+                        // union rest
+                        for (let name in rest) {
+                            prev[name] = 1;
+                        }
                     }
                 }
-            }, []);
+
+                return prev;
+            }, {});
         }
     };
 
@@ -61,24 +64,31 @@ module.exports = (grammer) => {
      * [...ab...]
      */
     let firstList = (body) => {
-        let bodyId = grammer.getBodyId(body);
+        let bodyId = JSON.stringify(body);
         if (firstListMap[bodyId]) {
             return firstListMap[bodyId];
         }
 
         let ret = [];
-        forEach(body, (y, index) => {
-            let set = first(y);
+        for (let i = 0, n = body.length; i < n; i++) {
+            let set = first(body[i]);
+            let hasEpsilon = set[grammer.EPSILON] === 1;
 
-            ret = union(ret, difference(set, [grammer.EPSILON]));
-            if (!contain(set, grammer.EPSILON)) { // stop
-                return true;
+            // union first set of y except epsilon
+            for (let name in set) {
+                if (name !== grammer.EPSILON) {
+                    ret[name] = 1;
+                }
             }
 
-            if (index === body.length - 1) {
-                ret = union(ret, [grammer.EPSILON]);
+            if (!hasEpsilon) { // stop
+                break
+            } else {
+                if (i === body.length - 1) {
+                    ret[grammer.EPSILON] = 1; // add epsilon
+                }
             }
-        });
+        }
 
         firstListMap[bodyId] = ret;
         return ret;

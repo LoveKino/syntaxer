@@ -1,9 +1,5 @@
 'use strict';
 
-let {
-    contain, forEach, difference, union, reduce
-} = require('bolzano');
-
 /**
  * FOLLOW(A) = { a | S *⇒ ...Aa..., a ϵ T }
  *
@@ -20,39 +16,46 @@ let {
 module.exports = (grammer, first) => {
     let map = {};
 
-    map[grammer.startSymbol] = [grammer.END_SYMBOL];
+    map[grammer.startSymbol] = {};
+    map[grammer.startSymbol][grammer.END_SYMBOL] = 1;
 
-    let oldLen = getNum(map);
 
-    while (true) { // eslint-disable-line
-        forEach(grammer.productions, (production) => { // eslint-disable-line
+    let added = 1;
+    while (added) { // eslint-disable-line
+        added = 0;
+
+        grammer.productions.forEach((production) => { // eslint-disable-line
             let head = grammer.getHead(production);
             let body = grammer.getBody(production);
 
-            forEach(body, (item, index) => {
+            body.forEach((item, index) => {
                 if (grammer.isNoneTerminalSymbol(item)) {
                     let firstRest = first(body.slice(index + 1), grammer);
+                    map[item] = map[item] || {};
 
-                    map[item] = union(map[item] || [], difference(firstRest, [grammer.EPSILON]));
+                    for (let name in firstRest) {
+                        if (name !== grammer.EPSILON) { // except epsilon
+                            if (!map[item][name]) {
+                                added++;
+                                map[item][name] = 1;
+                            }
+                        }
+                    }
 
                     // β *⇒ ε
-                    if (contain(firstRest, grammer.EPSILON) ||
+                    if (firstRest[grammer.EPSILON] ||
                         index === body.length - 1) {
-                        map[item] = union(map[item], map[head] || []);
+                        for (let name in (map[head] || {})) {
+                            if (!map[item][name]) {
+                                added++;
+                                map[item][name] = 1;
+                            }
+                        }
                     }
                 }
             });
         });
-        let newLen = getNum(map);
-
-        if (newLen === oldLen) break; // no more follow
-
-        oldLen = newLen;
     }
 
     return map;
-};
-
-let getNum = (map) => {
-    return reduce(map, (prev, list) => prev + list.length, 0);
 };
