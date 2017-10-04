@@ -20,11 +20,32 @@ let testClosure = (g) => {
     let LR1Grammer = LR1Itemer(grammer);
 
     forEach(g.LR1C, (item) => {
-        assert.deepEqual(item, buildClosure([
-            LR1Grammer.fromList(item[0], grammer)
-        ], grammer, LR1Grammer).items.map(v => {
+        let firstItem = item[0];
+        let index = getProductionIndex(grammer, firstItem);
+        assert.deepEqual(item, getClosureItem(grammer, firstItem).items.map(v => {
             return v.list();
         }));
+    });
+};
+
+let getClosureItem = (grammer, firstItem) => {
+    let LR1Grammer = LR1Itemer(grammer);
+    return buildClosure([
+        getLR1Item(grammer, LR1Grammer, firstItem)
+    ], grammer, LR1Grammer);
+};
+
+let getLR1Item = (grammer, LR1Grammer, firstItem) => {
+    let index = getProductionIndex(grammer, firstItem);
+    return LR1Grammer.fromList(
+        index,
+        firstItem[2],
+        firstItem[3]);
+};
+
+let getProductionIndex = (grammer, firstItem) => {
+    return grammer.productions.findIndex((v) => {
+        return firstItem[0] === v[0] && JSON.stringify(firstItem[1]) === JSON.stringify(v[1])
     });
 };
 
@@ -35,11 +56,7 @@ describe('LR1-closure', () => {
 
     it('g3:+', () => {
         let grammer = ctxFreeGrammer(g3.grammer);
-
-        let LR1Grammer = LR1Itemer(grammer);
-        let ret = buildClosure([
-            LR1Grammer.fromList(['S`', ['E'], 0, ['$']], grammer)
-        ], grammer, LR1Grammer).items;
+        let ret = getClosureItem(grammer, ['S`', ['E'], 0, ['$']]).items;
 
         assert.deepEqual([
             ['S`', ['E'], 0, ['$']],
@@ -50,12 +67,7 @@ describe('LR1-closure', () => {
 
     it('deep', () => {
         let grammer = ctxFreeGrammer(leftRecursion2.grammer);
-
-        let LR1Grammer = LR1Itemer(grammer);
-
-        let ret = buildClosure([
-            LR1Grammer.fromList(['S`', ['S'], 0, ['$']], grammer)
-        ], grammer, LR1Grammer).items;
+        let ret = getClosureItem(grammer, ['S`', ['S'], 0, ['$']]).items;
 
         assert.deepEqual(ret.map((v) => v.list()), [
             ['S`', ['S'], 0, ['$']],

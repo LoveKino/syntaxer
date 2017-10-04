@@ -37,6 +37,7 @@ let CtxFreeGrammer = function({
 
     // to map
     this.noneTerminalProductionMap = getNoneTerminalProductionMap(this.productions);
+    this.noneTerminalProductionIndexMap = getNoneTerminalProductionIndexMap(this.productions);
     this.terminalMap = listToExistMap(this.T);
     this.noneTerminalMap = listToExistMap(this.N);
 
@@ -45,7 +46,7 @@ let CtxFreeGrammer = function({
 
 CtxFreeGrammer.prototype.getProductionByIndex = function(index) {
     if (index === -1) return this.expandedProduction;
-    return this.producitons[index];
+    return this.productions[index];
 };
 
 /**
@@ -53,6 +54,9 @@ CtxFreeGrammer.prototype.getProductionByIndex = function(index) {
  */
 CtxFreeGrammer.prototype.getProductionsOf = function(noneTerminal) {
     return this.noneTerminalProductionMap[noneTerminal];
+};
+CtxFreeGrammer.prototype.getProductionIndexsOf = function(noneTerminal) {
+    return this.noneTerminalProductionIndexMap[noneTerminal];
 };
 CtxFreeGrammer.prototype.getBodyId = function(body) {
     return JSON.stringify(body);
@@ -107,6 +111,20 @@ let getNoneTerminalProductionMap = (producitons) => {
     }
 
     return productionMap;
+};
+
+let getNoneTerminalProductionIndexMap = (producitons) => {
+    let indexMap = {};
+
+    let productionLen = producitons.length;
+    for (let i = 0; i < productionLen; i++) {
+        let production = producitons[i];
+        let head = production[0];
+        indexMap[head] = indexMap[head] || [];
+        indexMap[head].push(i);
+    }
+
+    return indexMap;
 };
 
 module.exports = (options) => new CtxFreeGrammer(options);

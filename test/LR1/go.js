@@ -25,11 +25,32 @@ let state = (g, X, from, to) => {
     let go = GO(grammer, LR1Grammer);
     assert.deepEqual(
         go({
-            items: LR1C[from].map(list => LR1Grammer.fromList(list, grammer))
+            items: LR1C[from].map(list => getLR1Item(grammer, LR1Grammer, list))
         }, X).items.map(v => v.list()),
 
         LR1C[to]
     );
+};
+
+let getLR1Item = (grammer, LR1Grammer, firstItem) => {
+    let index = getProductionIndex(grammer, firstItem);
+    return LR1Grammer.fromList(
+        index,
+        firstItem[2],
+        firstItem[3]);
+};
+
+let getProductionIndex = (grammer, firstItem) => {
+    return grammer.productions.findIndex((v) => {
+        return firstItem[0] === v[0] && JSON.stringify(firstItem[1]) === JSON.stringify(v[1])
+    });
+};
+
+let getClosureItem = (grammer, firstItem) => {
+    let LR1Grammer = LR1Itemer(grammer);
+    return buildClosure([
+        getLR1Item(grammer, LR1Grammer, firstItem)
+    ], grammer, LR1Grammer);
 };
 
 describe('LR(1):go', () => {
@@ -55,9 +76,7 @@ describe('LR(1):go', () => {
 
         let LR1Grammer = LR1Itemer(grammer);
 
-        let ret = buildClosure([
-            LR1Grammer.fromList(['S`', ['S'], 0, ['$']], grammer)
-        ], grammer, LR1Grammer);
+        let ret = getClosureItem(grammer, ['S`', ['S'], 0, ['$']]);
 
         let newState = GO(grammer, LR1Grammer)(ret, '*');
         assert.deepEqual(newState.items.map(item => item.list()), [
