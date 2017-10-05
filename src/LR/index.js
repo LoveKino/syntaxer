@@ -19,8 +19,14 @@
  *    (4) if action[Sm, ai] = error, error
  */
 
-let {
-    END_SYMBOL, EXPAND_START_SYMBOL
+const {
+    END_SYMBOL,
+    EXPAND_START_SYMBOL,
+
+    REDUCE,
+    SHIFT,
+    ACCEPT,
+    ERROR
 } = require('../base/constant');
 
 let {
@@ -38,7 +44,7 @@ let {
  *      return of action function, is a object: {type, production, errorMsg}
  *      production = [head, body:[]]
  */
-module.exports = (ACTION, GOTO, {
+module.exports = (grammer, ACTION, GOTO, {
     reduceHandler,
     acceptHandler
 } = {}) => {
@@ -48,11 +54,11 @@ module.exports = (ACTION, GOTO, {
     // initial ast
     let ast = initAST(EXPAND_START_SYMBOL);
 
-    let action = (state, token) => {
+    let findAction = (state, token) => {
         let act = ACTION[state][token.name];
         if (!act) {
             return {
-                type: 'error',
+                type: ERROR,
                 errorMsg: `unexpected symbol (token.name) ${token.name}, token (token.text) is ${token.text}. Try to find ACTION from state ${state}.`
             };
         } else {
@@ -72,27 +78,27 @@ module.exports = (ACTION, GOTO, {
         let topState = getTopState(configuration);
         let token = getNextInputToken(configuration);
         // look up action
-        let ret = action(topState, token);
+        let nextAction = findAction(topState, token);
 
-        switch (ret.type) {
-            case 'shift':
-                shift(configuration, ret.state, token);
+        switch (nextAction.type) {
+            case SHIFT:
+                shift(configuration, nextAction.state, token);
                 ast = appendToken(ast, token);
                 break;
-            case 'reduce':
+            case REDUCE:
                 // reduce production
-                ast = reduce(ast, ret.production, configuration, goTo, reduceHandler);
+                ast = reduce(ast, grammer.getProductionByIndex(nextAction.pIndex), configuration, goTo, reduceHandler);
                 break;
-            case 'error':
+            case ERROR:
                 // error handle
-                throw new Error(ret.errorMsg);
-            case 'accept':
+                throw new Error(nextAction.errorMsg);
+            case ACCEPT:
                 // clear configration
                 configuration[1] = [];
                 acceptHandler && acceptHandler(ast); // accept handle
                 break;
             default:
-                throw new Error(`unexpected action type ${ret.type}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}`);
+                throw new Error(`unexpected action type ${nextAction.type}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}`);
         }
     };
 
@@ -161,7 +167,10 @@ let reduce = (ast, [head, body], configuration, goTo, reduceHandler) => {
         text: `[none terminal symbol] ${head}`
     }));
 
-    let {newAst, midNode} = reduceAST(ast,
+    let {
+        newAst,
+        midNode
+    } = reduceAST(ast,
         ast.children.length - body.length, // start position
         ast.children.length - 1, // end position
         head);

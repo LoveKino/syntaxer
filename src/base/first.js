@@ -72,7 +72,7 @@ module.exports = (grammer) => {
         let ret = [];
         for (let i = 0, n = body.length; i < n; i++) {
             let set = first(body[i]);
-            let hasEpsilon = set[grammer.EPSILON] === 1;
+            let hasEpsilon = set[grammer.EPSILON];
 
             // union first set of y except epsilon
             for (let name in set) {

@@ -2,7 +2,6 @@
 
 let LR1CanonicalCollection = require('./LR1CanonicalCollection');
 let {
-    forEach,
     findIndex
 } = require('bolzano');
 let GO = require('./go');
@@ -12,6 +11,11 @@ let {
 let {
     sameClosure
 } = require('./closure');
+const {
+    REDUCE,
+    SHIFT,
+    ACCEPT
+} = require('../../base/constant');
 
 module.exports = (grammer) => {
     let ACTION = [], // action table
@@ -22,23 +26,23 @@ module.exports = (grammer) => {
 
     let C = LR1CanonicalCollection(grammer, LR1Grammer, go);
 
-    forEach(C, (I, index) => {
+    C.forEach((I, index) => {
         ACTION[index] = ACTION[index] || {};
 
         // item = [head, body, dotPosition, forwards]
 
-        forEach(I.items, (item) => {
+        I.items.forEach((item) => {
             // [S`→ S., $] ϵ Ii
             if (LR1Grammer.isAcceptItem(item)) {
                 //
                 ACTION[index][grammer.END_SYMBOL] = {
-                    type: 'accept'
+                    type: ACCEPT
                 };
             } else if (item.isReduceItem()) { // [A → α., a] ϵ Ii, A≠S`
-                forEach(item.forwards, (a) => {
+                item.forwards.forEach((a) => {
                     ACTION[index][a] = {
-                        type: 'reduce',
-                        production: item.production // which production
+                        type: REDUCE,
+                        pIndex: item.productionIndex // which production
                     };
                 });
             } else if (grammer.isTerminalSymbol(item.getNextSymbol())) {
@@ -46,7 +50,7 @@ module.exports = (grammer) => {
 
                 if (Ij && Ij.items.length) {
                     ACTION[index][item.getNextSymbol()] = {
-                        type: 'shift',
+                        type: SHIFT,
                         state: getStateIndex(C, Ij)
                     };
                 }
@@ -54,9 +58,9 @@ module.exports = (grammer) => {
         });
     });
 
-    forEach(C, (I, index) => {
+    C.forEach((I, index) => {
         GOTO[index] = GOTO[index] || {};
-        forEach(grammer.N, (A) => {
+        grammer.N.forEach((A) => {
             let Ij = go(I, A);
             if (Ij && Ij.items.length) {
                 GOTO[index][A] = getStateIndex(C, Ij);

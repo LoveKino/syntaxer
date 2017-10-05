@@ -66,76 +66,76 @@ C := d
 
         'ACTION': [{
             'c': {
-                'type': 'shift',
+                'type': 3,
                 'state': 1
             },
             'd': {
-                'type': 'shift',
+                'type': 3,
                 'state': 2
             }
         }, {
             'c': {
-                'type': 'shift',
+                'type': 3,
                 'state': 1
             },
             'd': {
-                'type': 'shift',
+                'type': 3,
                 'state': 2
             }
         }, {
             'c': {
-                'type': 'reduce',
-                'production': ['C', ['d']]
+                'type': 2,
+                'pIndex': 2
             },
             'd': {
-                'type': 'reduce',
-                'production': ['C', ['d']]
+                'type': 2,
+                'pIndex': 2
             }
         }, {
             '$': {
-                'type': 'accept'
+                'type': 1
             }
         }, {
             'c': {
-                'type': 'shift',
+                'type': 3,
                 'state': 6
             },
             'd': {
-                'type': 'shift',
+                'type': 3,
                 'state': 7
             }
         }, {
             'c': {
-                'type': 'reduce',
-                'production': ['C', ['c', 'C']]
+                'type': 2,
+                'pIndex': 1
             },
             'd': {
-                'type': 'reduce',
-                'production': ['C', ['c', 'C']]
+                'type': 2,
+                'pIndex': 1
             }
         }, {
             'c': {
-                'type': 'shift',
+                'type': 3,
                 'state': 6
             },
             'd': {
-                'type': 'shift',
+                'type': 3,
                 'state': 7
             }
         }, {
             '$': {
-                'type': 'reduce',
-                'production': ['C', ['d']]
+                'type': 2,
+                'pIndex': 2
             }
         }, {
             '$': {
-                'type': 'reduce',
-                'production': ['S', ['C', 'C']]
+                'type': 2,
+                'pIndex': 0
             }
         }, {
             '$': {
-                'type': 'reduce',
-                'production': ['C', ['c', 'C']]
+                'type': 2,
+                'pIndex': 1
             }
         }]
     }

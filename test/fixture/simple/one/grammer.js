@@ -27,17 +27,17 @@ module.exports = {
 
         'ACTION': [{
             'a': {
-                'type': 'shift',
+                'type': 3,
                 'state': 1
             }
         }, {
             '$': {
-                'type': 'reduce',
-                'production': ['S', ['a']]
+                'type': 2,
+                'pIndex': 0
             }
         }, {
             '$': {
-                'type': 'accept'
+                'type': 1
             }
         }]
     }

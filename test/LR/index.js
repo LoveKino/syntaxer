@@ -8,13 +8,15 @@ let ctxFreeGrammer = require('../../src/base/ctxFreeGrammer');
 
 describe('LR', () => {
     it('index', (done) => {
+        let grammer = ctxFreeGrammer(g3.grammer);
         let {
-            ACTION, GOTO
-        } = LR1Table(ctxFreeGrammer(g3.grammer));
+            ACTION,
+            GOTO
+        } = LR1Table(grammer);
 
         let reduces = [];
 
-        let parser = LR(ACTION, GOTO, {
+        let parser = LR(grammer, ACTION, GOTO, {
             reduceHandler: (production, midNode, reducedTokens) => {
                 reduces.push(production, reducedTokens);
             },
@@ -57,13 +59,15 @@ describe('LR', () => {
     });
 
     it('reduce', (done) => {
+        let grammer = ctxFreeGrammer(g3.grammer);
         let {
-            ACTION, GOTO
-        } = LR1Table(ctxFreeGrammer(g3.grammer));
+            ACTION,
+            GOTO
+        } = LR1Table(grammer);
 
         let reduces = [];
 
-        let parser = LR(ACTION, GOTO, {
+        let parser = LR(grammer, ACTION, GOTO, {
             reduceHandler: (production, midNode, reducedTokens) => {
                 reduces.push(production, reducedTokens);
             },

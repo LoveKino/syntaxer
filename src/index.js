@@ -22,12 +22,14 @@ let ctxFreeGrammer = require('./base/ctxFreeGrammer');
  * just used for testing
  */
 let parse = (g, handlers) => {
+    let grammer = ctxFreeGrammer(g);
     let {
-        ACTION, GOTO
-    } = LR1Table(ctxFreeGrammer(g));
+        ACTION,
+        GOTO
+    } = LR1Table(grammer);
 
     return (tokens) => {
-        let parser = LR(ACTION, GOTO, handlers);
+        let parser = LR(grammer, ACTION, GOTO, handlers);
         tokens.forEach(parser);
         return parser(null);
     };
@@ -39,5 +41,9 @@ let buildLR1Table = (g) => {
 };
 
 module.exports = {
-    LR, LR1Table, parse, ctxFreeGrammer, buildLR1Table
+    LR,
+    LR1Table,
+    parse,
+    ctxFreeGrammer,
+    buildLR1Table
 };
