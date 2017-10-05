@@ -57,10 +57,10 @@ module.exports = (grammer, ACTION, GOTO, {
     let findAction = (state, token) => {
         let act = ACTION[state][token.name];
         if (!act) {
-            return {
-                type: ERROR,
-                errorMsg: `unexpected symbol (token.name) ${token.name}, token (token.text) is ${token.text}. Try to find ACTION from state ${state}.`
-            };
+            return [
+                ERROR,
+                `unexpected symbol (token.name) ${token.name}, token (token.text) is ${token.text}. Try to find ACTION from state ${state}.`
+            ];
         } else {
             return act;
         }
@@ -80,25 +80,25 @@ module.exports = (grammer, ACTION, GOTO, {
         // look up action
         let nextAction = findAction(topState, token);
 
-        switch (nextAction.type) {
+        switch (nextAction[0]) {
             case SHIFT:
-                shift(configuration, nextAction.state, token);
+                shift(configuration, nextAction[1], token);
                 ast = appendToken(ast, token);
                 break;
             case REDUCE:
                 // reduce production
-                ast = reduce(ast, grammer.getProductionByIndex(nextAction.pIndex), configuration, goTo, reduceHandler);
+                ast = reduce(ast, grammer.getProductionByIndex(nextAction[1]), configuration, goTo, reduceHandler);
                 break;
             case ERROR:
                 // error handle
-                throw new Error(nextAction.errorMsg);
+                throw new Error(nextAction[1]);
             case ACCEPT:
                 // clear configration
                 configuration[1] = [];
                 acceptHandler && acceptHandler(ast); // accept handle
                 break;
             default:
-                throw new Error(`unexpected action type ${nextAction.type}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}`);
+                throw new Error(`unexpected action type ${nextAction[0]}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}`);
         }
     };
 

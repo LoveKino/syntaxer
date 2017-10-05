@@ -35,24 +35,16 @@ module.exports = (grammer) => {
             // [S`→ S., $] ϵ Ii
             if (LR1Grammer.isAcceptItem(item)) {
                 //
-                ACTION[index][grammer.END_SYMBOL] = {
-                    type: ACCEPT
-                };
+                ACTION[index][grammer.END_SYMBOL] = [ACCEPT];
             } else if (item.isReduceItem()) { // [A → α., a] ϵ Ii, A≠S`
                 item.forwards.forEach((a) => {
-                    ACTION[index][a] = {
-                        type: REDUCE,
-                        pIndex: item.productionIndex // which production
-                    };
+                    ACTION[index][a] = [REDUCE, item.productionIndex /*which production*/ ];
                 });
             } else if (grammer.isTerminalSymbol(item.getNextSymbol())) {
                 let Ij = go(I, item.getNextSymbol());
 
                 if (Ij && Ij.items.length) {
-                    ACTION[index][item.getNextSymbol()] = {
-                        type: SHIFT,
-                        state: getStateIndex(C, Ij)
-                    };
+                    ACTION[index][item.getNextSymbol()] = [SHIFT, getStateIndex(C, Ij)];
                 }
             }
         });
