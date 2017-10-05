@@ -87,7 +87,7 @@ module.exports = (grammer, ACTION, GOTO, {
                 break;
             case REDUCE:
                 // reduce production
-                ast = reduce(ast, grammer.getProductionByIndex(nextAction[1]), configuration, goTo, reduceHandler);
+                ast = reduce(ast, grammer.getProductionByIndex(nextAction[1]), nextAction[1], configuration, goTo, reduceHandler);
                 break;
             case ERROR:
                 // error handle
@@ -153,7 +153,7 @@ let shift = (configuration, state, token) => {
 // (S₀X₁S₁..XmSm, aiai₊₁...an$) -> (S₀X₁S₁...Xm₋rSm₋rAS, aiai₊₁...an$)
 // A → β, r = |β|
 // S = GOTO(Sm₋r, A)
-let reduce = (ast, [head, body], configuration, goTo, reduceHandler) => {
+let reduce = (ast, [head, body], pIndex, configuration, goTo, reduceHandler) => {
     let stack = configuration[0];
     let reducedTokens = [];
     for (let i = 0; i < body.length; i++) {
@@ -175,7 +175,7 @@ let reduce = (ast, [head, body], configuration, goTo, reduceHandler) => {
         ast.children.length - 1, // end position
         head);
 
-    reduceHandler && reduceHandler([head, body], midNode, reducedTokens, ast);
+    reduceHandler && reduceHandler([head, body], midNode, reducedTokens, pIndex, ast);
     return newAst;
 };
 
