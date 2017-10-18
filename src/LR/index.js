@@ -59,7 +59,7 @@ module.exports = (grammer, ACTION, GOTO, {
         if (!act) {
             return [
                 ERROR,
-                `unexpected symbol (token.name) ${token.name}, token (token.text) is ${token.text}. Try to find ACTION from state ${state}.`
+                `Error happend nearby "${getNearByInfo()}". unexpected symbol (token.name) ${token.name}, token (token.text) is ${token.text}. Try to find ACTION from state ${state}.`
             ];
         } else {
             return act;
@@ -69,7 +69,7 @@ module.exports = (grammer, ACTION, GOTO, {
     let goTo = (state, token) => {
         let nextState = GOTO[state][token.name];
         if (nextState === undefined) {
-            throw new Error(`fail to goto state from ${state} and symbol (token.name) is ${token.name}, token (token.text) is ${token.text}. Try to do GOTO from state ${state}, but next state not exists.`);
+            throw new Error(`Error happend nearby "${getNearByInfo()}". Fail to goto state from ${state} and symbol (token.name) is ${token.name}, token (token.text) is ${token.text}. Try to do GOTO from state ${state}, but next state not exists.`);
         }
         return nextState;
     };
@@ -98,10 +98,21 @@ module.exports = (grammer, ACTION, GOTO, {
                 acceptHandler && acceptHandler(ast); // accept handle
                 break;
             default:
-                throw new Error(`unexpected action type ${nextAction[0]}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}`);
+                throw new Error(`unexpected action type ${nextAction[0]}, when try to recoginise from [${topState}, ${token.name}]. Token is ${token.text}. Nearby text is "${getNearByInfo()}"`);
         }
     };
 
+    let getNearByInfo = () => {
+        let text = '';
+        for (let i = 0, n = nearByTokens.length; i < n; i++) {
+            text += nearByTokens[i].text;
+        }
+
+        return text;
+    };
+
+    let nearByLen = 5;
+    let nearByTokens = [];
     /**
      * @param token Object
      *   accept token as stream
@@ -124,6 +135,10 @@ module.exports = (grammer, ACTION, GOTO, {
 
             return ast;
         } else {
+            nearByTokens.push(token);
+            if (nearByTokens.length > nearByLen) {
+                nearByTokens.shift();
+            }
             // add token to configuration
             configuration[1].push(token);
             while (configuration[1].length > 1) {
